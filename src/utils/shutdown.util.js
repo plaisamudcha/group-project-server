@@ -7,7 +7,9 @@ const shutdown = async (signal) => {
     console.log("Prisma disconnect");
   } catch (err) {
     console.log("Error when disconnect", err);
-  }
+  }finally{
+		process.exit(0)
+	}
 };
 
 export default shutdown;
