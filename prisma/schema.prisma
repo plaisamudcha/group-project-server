@@ -116,10 +116,7 @@ model AuditLog {
   @@index([userId], map: "AuditLog_userId_fkey")
 }
 
-enum RoleType {
-  EMPLOYEE
-  HR
-}
+
 
 enum EmploymentType {
   FULLTIME
@@ -153,32 +150,9 @@ enum RoleType {
   HR
 }
 
-enum EmploymentType {
-  FULLTIME
-  PARTTIME
-}
 
-enum StatusType {
-  PENDING
-  ABSENT
-  ON_LEAVE
-  COMPLETED
-  INCOMPLETED
-}
 
-enum LeaveType {
-  SICK
-  PERSONAL
-  VACATION
-  UNPAID
-  MATERNITY
-}
 
-enum StatusLeave {
-  APPROVED
-  REJECTED
-  PENDING
-}
 
 enum LogAction {
   CREATE
