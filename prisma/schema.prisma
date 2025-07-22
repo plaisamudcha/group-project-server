@@ -73,8 +73,7 @@ model Attendance {
   workPolicy       WorkPolicy        @relation(fields: [workPolicyId], references: [id])
   leaveAdjustments LeaveAdjustment[]
 }
-
-model LeaveRequest {
+  model LeaveRequest {
   id          String            @id @default(uuid())
   startDate   DateTime
   endDate     DateTime
@@ -113,12 +112,11 @@ model AuditLog {
   createdAt    DateTime  @default(now())
   userId       String
   user         User      @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "AuditLog_userId_fkey")
 }
 
-enum RoleType {
-  EMPLOYEE
-  HR
-}
+
 
 enum EmploymentType {
   FULLTIME
@@ -146,6 +144,15 @@ enum StatusLeave {
   REJECTED
   PENDING
 }
+
+enum RoleType {
+  EMPLOYEE
+  HR
+}
+
+
+
+
 
 enum LogAction {
   CREATE
