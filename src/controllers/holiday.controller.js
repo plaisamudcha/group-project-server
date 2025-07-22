@@ -20,9 +20,17 @@ const holidayController = {
         }
 
         const createdHoliday = await holidayService.createHoliday(data)
-        res.status(201).json({message: 'เพิ่มวันหยุด เรียบร้อย'})
+        res.status(201).json({ message: 'เพิ่มวันหยุด เรียบร้อย' })
     },
+    getHoliday: async (req, res) => {
 
+        const resHoliday = await holidayService.fetchHoliday()
+        if (resHoliday.length === 0) {
+            res.status(200).json({message: 'ไม่พบข้อมูล'})
+        }
+
+        res.status(200).json({message: 'ขอดูวันหยุดสำเร็จ', holiday: {...resHoliday}})
+    }
 };
 
 

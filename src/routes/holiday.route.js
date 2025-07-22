@@ -4,9 +4,9 @@ import holidayController from "../controllers/holiday.controller.js";
 
 const holidayRoute = express.Router();
 
-holidayRoute.use(authMiddleware.checkToken)
+// holidayRoute.use(authMiddleware.checkToken)
 
-holidayRoute.get("/",authMiddleware.isRole('HR'), holidayController.createHoliday);
-holidayRoute.post("/", () => {});
+holidayRoute.get("/", holidayController.getHoliday);
+holidayRoute.post("/", authMiddleware.isRole('HR'), holidayController.createHoliday);
 
 export default holidayRoute;

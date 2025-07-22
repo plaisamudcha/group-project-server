@@ -1,11 +1,11 @@
 import prisma from "../config/prisma.js";
 
 const holidayService = {
-    fetchHoliday : () => {
-        return  prisma.holiday.findMany()
+    fetchHoliday : async () => {
+        return await  prisma.holiday.findMany()
     },
-    createHoliday : (data) => {
-        return prisma.holiday.create({data})
+    createHoliday : async (data) => {
+        return await prisma.holiday.create({data})
     } 
 };
 
