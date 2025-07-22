@@ -6,7 +6,7 @@ const authMiddleware = {
     try {
       const authHeader = req.headers.authorization;
       if (!authHeader) createError(401, "Token is missing");
-      const token = authHeader.split(" ");
+      const token = authHeader.split(" ")[1];
       const payload = genTokenJWT.checkToken(token);
       req.user = payload;
       next();
