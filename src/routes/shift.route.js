@@ -4,8 +4,8 @@ import authMiddleware from "../middlewares/auth.middleware.js";
 
 const shiftsRoute = express.Router();
 
-shiftController.use(authMiddleware.checkToken);
-shiftController.use(authMiddleware.isRole("HR"));
+shiftsRoute.use(authMiddleware.checkToken);
+shiftsRoute.use(authMiddleware.isRole("HR"));
 
 shiftsRoute.get("/", shiftController.getAllshift);
 shiftsRoute.post("/", shiftController.createShift);
