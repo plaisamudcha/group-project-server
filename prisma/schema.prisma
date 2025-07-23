@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -19,31 +13,25 @@ model User {
   name            String
   email           String           @unique
   role            RoleType
-  employeeProfile EmployeeProfile?
+  password        String
   attendances     Attendance[]
-  leaveRequests   LeaveRequest[]
   auditLogs       AuditLog[]
-}
-
-enum RoleType {
-  EMPLOYEE
-  HR
+  employeeProfile EmployeeProfile?
+  leaveRequests   LeaveRequest[]
 }
 
 model EmployeeProfile {
   id             String         @id @default(uuid())
   userId         String         @unique
-  user           User           @relation(fields: [userId], references: [id])
   workPolicyId   String
   shiftId        String?
   employmentType EmploymentType @default(FULLTIME)
-  workPolicy     WorkPolicy     @relation(fields: [workPolicyId], references: [id])
   shift          Shift?         @relation(fields: [shiftId], references: [id])
-}
+  user           User           @relation(fields: [userId], references: [id])
+  workPolicy     WorkPolicy     @relation(fields: [workPolicyId], references: [id])
 
-enum EmploymentType {
-  FULLTIME
-  PARTTIME
+  @@index([shiftId], map: "EmployeeProfile_shiftId_fkey")
+  @@index([workPolicyId], map: "EmployeeProfile_workPolicyId_fkey")
 }
 
 model WorkPolicy {
@@ -83,44 +71,30 @@ model Attendance {
   status           StatusType        @default(PENDING)
   workPolicyId     String
   shiftId          String
+  shift            Shift             @relation(fields: [shiftId], references: [id])
   user             User              @relation(fields: [userId], references: [id])
   workPolicy       WorkPolicy        @relation(fields: [workPolicyId], references: [id])
-  shift            Shift             @relation(fields: [shiftId], references: [id])
   leaveAdjustments LeaveAdjustment[]
-}
 
-enum StatusType {
-  PENDING
-  ABSENT
-  ON_LEAVE
-  COMPLETED
-  INCOMPLETED
+  @@index([shiftId], map: "Attendance_shiftId_fkey")
+  @@index([userId], map: "Attendance_userId_fkey")
+  @@index([workPolicyId], map: "Attendance_workPolicyId_fkey")
 }
 
 model LeaveRequest {
   id          String            @id @default(uuid())
   startDate   DateTime
   endDate     DateTime
+  createdAt   DateTime          @default(now())
+  updateAt    DateTime          @updatedAt
   leaveType   LeaveType
   status      StatusLeave       @default(PENDING)
   reason      String
   userId      String
-  user        User              @relation(fields: [userId], references: [id])
   adjustments LeaveAdjustment[]
-}
+  user        User              @relation(fields: [userId], references: [id])
 
-enum LeaveType {
-  SICK
-  PERSONAL
-  VACATION
-  UNPAID
-  MATERNITY
-}
-
-enum StatusLeave {
-  APPROVED
-  REJECTED
-  PENDING
+  @@index([userId], map: "LeaveRequest_userId_fkey")
 }
 
 model LeaveAdjustment {
@@ -129,8 +103,11 @@ model LeaveAdjustment {
   deductionMinutes Int
   adjustmentType   String
   attendanceId     String
-  leaveRequest     LeaveRequest @relation(fields: [leaveRequestId], references: [id])
   attendance       Attendance   @relation(fields: [attendanceId], references: [id])
+  leaveRequest     LeaveRequest @relation(fields: [leaveRequestId], references: [id])
+
+  @@index([attendanceId], map: "LeaveAdjustment_attendanceId_fkey")
+  @@index([leaveRequestId], map: "LeaveAdjustment_leaveRequestId_fkey")
 }
 
 model Holiday {
@@ -148,6 +125,40 @@ model AuditLog {
   createdAt    DateTime  @default(now())
   userId       String
   user         User      @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "AuditLog_userId_fkey")
+}
+
+enum RoleType {
+  EMPLOYEE
+  HR
+}
+
+enum EmploymentType {
+  FULLTIME
+  PARTTIME
+}
+
+enum StatusType {
+  PENDING
+  ABSENT
+  ON_LEAVE
+  COMPLETED
+  INCOMPLETED
+}
+
+enum LeaveType {
+  SICK
+  PERSONAL
+  VACATION
+  UNPAID
+  MATERNITY
+}
+
+enum StatusLeave {
+  APPROVED
+  REJECTED
+  PENDING
 }
 
 enum LogAction {
