@@ -13,6 +13,7 @@ import holidayRoute from "./routes/holiday.route.js";
 import auditRoute from "./routes/audit-log.route.js";
 import notFoundMiddleware from "./middlewares/not-found.middleware.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
+import annualLeaveRoute from "./routes/annualLeave.route.js";
 
 const app = express();
 app.use(express.json());
@@ -29,6 +30,7 @@ app.use("/shifts", shiftsRoute);
 app.use("/leave-adjustments", leaveAdjustmentRoute);
 app.use("/holidays", holidayRoute);
 app.use("/audit-logs", auditRoute);
+app.use("/aunnual-leave", annualLeaveRoute);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

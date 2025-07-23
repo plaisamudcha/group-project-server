@@ -9,15 +9,16 @@ datasource db {
 }
 
 model User {
-  id              String           @id @default(uuid())
-  name            String
-  email           String           @unique
-  role            RoleType
-  password        String
-  attendances     Attendance[]
-  auditLogs       AuditLog[]
-  employeeProfile EmployeeProfile?
-  leaveRequests   LeaveRequest[]
+  id                     String                   @id @default(uuid())
+  name                   String
+  email                  String                   @unique
+  role                   RoleType
+  password               String
+  attendances            Attendance[]
+  auditLogs              AuditLog[]
+  employeeProfile        EmployeeProfile?
+  leaveRequests          LeaveRequest[]
+  annualLeaveEntitlement AnnualLeaveEntitlement[]
 }
 
 model EmployeeProfile {
@@ -73,10 +74,12 @@ model Attendance {
   workPolicy       WorkPolicy        @relation(fields: [workPolicyId], references: [id])
   leaveAdjustments LeaveAdjustment[]
 }
-  model LeaveRequest {
+
+model LeaveRequest {
   id          String            @id @default(uuid())
   startDate   DateTime
   endDate     DateTime
+  leaveDay    Float
   createdAt   DateTime          @default(now())
   updateAt    DateTime
   leaveType   LeaveType
@@ -112,11 +115,20 @@ model AuditLog {
   createdAt    DateTime  @default(now())
   userId       String
   user         User      @relation(fields: [userId], references: [id])
-
-  @@index([userId], map: "AuditLog_userId_fkey")
 }
 
+model AnnualLeaveEntitlement {
+  id            Int      @id @default(autoincrement())
+  userId        String
+  year          Int
+  leaveType     String
+  entitledDays  Float
+  usedDays      Float    @default(0)
+  remainingDays Float
+  updatedAt     DateTime @updatedAt
 
+  user User @relation(fields: [userId], references: [id])
+}
 
 enum EmploymentType {
   FULLTIME
@@ -149,10 +161,6 @@ enum RoleType {
   EMPLOYEE
   HR
 }
-
-
-
-
 
 enum LogAction {
   CREATE
