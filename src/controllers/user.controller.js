@@ -30,24 +30,8 @@ const userController = {
     const updatedUser = await userService.updateUser(id, req.body);
     res.status(200).json(updatedUser);
   },
-  // GET
-  getProfileByUserId: async (req, res) => {
-    const { userId } = req.params;
-    const profile = await userService.getProfileByUserId(userId);
-    if (!profile) {
-      createError(400, "ไม่พบโปรไฟล์ที่ระบุ");
-    }
-    res.status(200).json(profile);
-  },
-
-  updateProfileByUserId: async (req, res) => {
-    const { userId } = req.params;
-    const updatedProfile = await userService.updateProfileByUserId(
-      userId,
-      req.body
-    );
-    res.status(200).json(updatedProfile);
-  },
+  
+  
 };
 
 export default userController;
