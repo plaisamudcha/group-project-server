@@ -10,7 +10,7 @@ const userController = {
   },
   // GET
   getUserById: async (req, res) => {
-    const id = req.params;
+    const { id } = req.params;
     const user = await userService.getUserById(id);
     if (!user) {
       createError(400, "ไม่พบผู้ใช้ที่ระบุ");
@@ -21,6 +21,11 @@ const userController = {
   createUser: async (req, res) => {
     const { name, email, role, ...profileData } = req.body;
     const userData = { name, email, role };
+
+    const existingUser = await auditService.getUserByEmail(email);
+    if (existingUser) {
+      createError(400, "อีเมลนี้ถูกใช้ไปแล้ว");
+    }
 
     const newUser = await userService.createUser(userData, profileData);
     const data = {
@@ -38,6 +43,10 @@ const userController = {
   // PUT
   updateUser: async (req, res) => {
     const { id } = req.params;
+    const existingUser = await userService.getUserById(id);
+    if (!existingUser) {
+      createError(400, "ไม่พบผู้ใช้ที่ระบุ");
+    }
     const newUser = await userService.updateUser(id, req.body);
     const data = {
       action: "UPDATE",
