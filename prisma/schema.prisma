@@ -29,12 +29,6 @@ model EmployeeProfile {
   shift          Shift?         @relation(fields: [shiftId], references: [id])
   user           User           @relation(fields: [userId], references: [id])
   workPolicy     WorkPolicy     @relation(fields: [workPolicyId], references: [id])
-  shift          Shift?         @relation(fields: [shiftId], references: [id])
-}
-
-enum EmploymentType {
-  FULLTIME
-  PARTTIME
 }
 
 model WorkPolicy {
@@ -79,40 +73,18 @@ model Attendance {
   workPolicy       WorkPolicy        @relation(fields: [workPolicyId], references: [id])
   leaveAdjustments LeaveAdjustment[]
 }
-
-enum StatusType {
-  PENDING
-  ABSENT
-  ON_LEAVE
-  COMPLETED
-  INCOMPLETED
-}
-
-model LeaveRequest {
+  model LeaveRequest {
   id          String            @id @default(uuid())
   startDate   DateTime
   endDate     DateTime
+  createdAt   DateTime          @default(now())
+  updateAt    DateTime
   leaveType   LeaveType
   status      StatusLeave       @default(PENDING)
   reason      String
   userId      String
   adjustments LeaveAdjustment[]
   user        User              @relation(fields: [userId], references: [id])
-  adjustments LeaveAdjustment[]
-}
-
-enum LeaveType {
-  SICK
-  PERSONAL
-  VACATION
-  UNPAID
-  MATERNITY
-}
-
-enum StatusLeave {
-  APPROVED
-  REJECTED
-  PENDING
 }
 
 model LeaveAdjustment {
@@ -123,7 +95,6 @@ model LeaveAdjustment {
   attendanceId     String
   attendance       Attendance   @relation(fields: [attendanceId], references: [id])
   leaveRequest     LeaveRequest @relation(fields: [leaveRequestId], references: [id])
-  attendance       Attendance   @relation(fields: [attendanceId], references: [id])
 }
 
 model Holiday {
@@ -141,7 +112,47 @@ model AuditLog {
   createdAt    DateTime  @default(now())
   userId       String
   user         User      @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "AuditLog_userId_fkey")
 }
+
+
+
+enum EmploymentType {
+  FULLTIME
+  PARTTIME
+}
+
+enum StatusType {
+  PENDING
+  ABSENT
+  ON_LEAVE
+  COMPLETED
+  INCOMPLETED
+}
+
+enum LeaveType {
+  SICK
+  PERSONAL
+  VACATION
+  UNPAID
+  MATERNITY
+}
+
+enum StatusLeave {
+  APPROVED
+  REJECTED
+  PENDING
+}
+
+enum RoleType {
+  EMPLOYEE
+  HR
+}
+
+
+
+
 
 enum LogAction {
   CREATE
