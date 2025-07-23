@@ -31,13 +31,16 @@ const authService = {
     })
   },
   login: async (email, password) =>  {
+    console.log(email, password);
     const user = await prisma.user.findUnique({
       where: {email}
     })
+    console.log(user)
     if(!user){
       return null;
     }
     const isMatch = await bcrypt.compare(password, user.password)
+    console.log(isMatch)
     return isMatch? user : null;
   }
 };

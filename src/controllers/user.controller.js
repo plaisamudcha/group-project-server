@@ -1,4 +1,5 @@
 import auditService from "../services/audit-log.service.js";
+import authService from "../services/auth.service.js";
 import userService from "../services/user.service.js";
 import createError from "../utils/create-error.util.js";
 
@@ -19,10 +20,11 @@ const userController = {
   },
   // POST
   createUser: async (req, res) => {
-    const { name, email, role, ...profileData } = req.body;
-    const userData = { name, email, role };
+    const { name, email, role, password, ...profileData } = req.body;
+    const userData = { name, email, role, password };
+    console.log(req.body)
 
-    const existingUser = await auditService.getUserByEmail(email);
+    const existingUser = await authService.findExistUser(email);
     if (existingUser) {
       createError(400, "อีเมลนี้ถูกใช้ไปแล้ว");
     }

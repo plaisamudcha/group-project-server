@@ -1,4 +1,5 @@
 import prisma from "../config/prisma.js";
+import bcrypt from "bcryptjs";
 
 const userService = {
   getAllUsers: () => {
@@ -20,24 +21,24 @@ const userService = {
     });
   },
 
-  createUser: (userData, profileData) => {
+  createUser: async (userData, profileData) => {
+    const hashpassword = await bcrypt.hash(userData.password, 12);
     return prisma.user.create({
       data: {
         name: userData.name,
         email: userData.email,
         role: userData.role,
+        password: hashpassword,
 
         employeeProfile: {
           create: {
             employmentType: profileData.employmentType,
             workPolicyId: profileData.workPolicyId,
-            shiftId: profileData.shiftId,
+            shiftId: profileData?.shiftId || null,
           },
         },
       },
-      include: {
-        employeeProfile: true,
-      },
+     
     });
   },
 
