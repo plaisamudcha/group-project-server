@@ -4,6 +4,9 @@ const workPolicyService = {
   getAllPolicies: async () => {
     return await prisma.workPolicy.findMany();
   },
+  getPolicyById: async (id) => {
+    return await prisma.workPolicy.findUnique({ where: { id } });
+  },
   createPolicy: async (
     name,
     start,
@@ -27,7 +30,7 @@ const workPolicyService = {
       },
     });
   },
-  UpdatePolicy: async (
+  updatePolicy: async (
     id,
     name,
     start,
