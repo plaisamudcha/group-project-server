@@ -15,7 +15,23 @@ const holidayService = {
                     lte: newEndDate, 
                 }
             }
-        });
+        })
+    },
+    patchHoliday : async (id, data) => {
+        return await prisma.holiday.update({
+            where: {id},
+            data
+        })
+    },
+    fetchHolidayById : async (id) => {
+        return await prisma.holiday.findMany({
+            where : {id}
+        })
+    },
+    deleteHoliday : async (id) => {
+        return await prisma.holiday.delete({
+            where : {id}
+        })
     }
 };
 
