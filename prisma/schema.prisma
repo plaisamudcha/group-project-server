@@ -81,7 +81,7 @@ model LeaveRequest {
   endDate     DateTime
   leaveDay    Float
   createdAt   DateTime          @default(now())
-  updateAt    DateTime
+  updateAt    DateTime          @updatedAt
   leaveType   LeaveType
   status      StatusLeave       @default(PENDING)
   reason      String
@@ -118,14 +118,14 @@ model AuditLog {
 }
 
 model AnnualLeaveEntitlement {
-  id            Int      @id @default(autoincrement())
+  id            Int       @id @default(autoincrement())
   userId        String
   year          Int
-  leaveType     String
+  leaveType     LeaveType
   entitledDays  Float
-  usedDays      Float    @default(0)
+  usedDays      Float     @default(0)
   remainingDays Float
-  updatedAt     DateTime @updatedAt
+  updatedAt     DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 }
