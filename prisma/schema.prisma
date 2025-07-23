@@ -9,15 +9,16 @@ datasource db {
 }
 
 model User {
-  id              String           @id @default(uuid())
-  name            String
-  email           String           @unique
-  role            RoleType
-  password        String
-  attendances     Attendance[]
-  auditLogs       AuditLog[]
-  employeeProfile EmployeeProfile?
-  leaveRequests   LeaveRequest[]
+  id                     String                   @id @default(uuid())
+  name                   String
+  email                  String                   @unique
+  role                   RoleType
+  password               String
+  attendances            Attendance[]
+  auditLogs              AuditLog[]
+  employeeProfile        EmployeeProfile?
+  leaveRequests          LeaveRequest[]
+  annualLeaveEntitlement AnnualLeaveEntitlement[]
 }
 
 model EmployeeProfile {
@@ -78,6 +79,7 @@ model LeaveRequest {
   id          String            @id @default(uuid())
   startDate   DateTime
   endDate     DateTime
+  leaveDay    Float
   createdAt   DateTime          @default(now())
   updateAt    DateTime
   leaveType   LeaveType
@@ -115,9 +117,17 @@ model AuditLog {
   user         User      @relation(fields: [userId], references: [id])
 }
 
-enum RoleType {
-  EMPLOYEE
-  HR
+model AnnualLeaveEntitlement {
+  id            Int      @id @default(autoincrement())
+  userId        String
+  year          Int
+  leaveType     String
+  entitledDays  Float
+  usedDays      Float    @default(0)
+  remainingDays Float
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 enum EmploymentType {
@@ -145,6 +155,11 @@ enum StatusLeave {
   APPROVED
   REJECTED
   PENDING
+}
+
+enum RoleType {
+  EMPLOYEE
+  HR
 }
 
 enum LogAction {
