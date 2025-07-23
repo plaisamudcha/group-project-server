@@ -7,7 +7,7 @@ const userController = {
   // GET
   getAllUsers: async (req, res) => {
     const users = await userService.getAllUsers();
-    res.status(200).json(users);
+    res.status(200).json({ users });
   },
   // GET
   getUserById: async (req, res) => {
@@ -16,13 +16,12 @@ const userController = {
     if (!user) {
       createError(400, "ไม่พบผู้ใช้ที่ระบุ");
     }
-    res.status(200).json(user);
+    res.status(200).json({ user });
   },
   // POST
   createUser: async (req, res) => {
     const { name, email, role, password, ...profileData } = req.body;
     const userData = { name, email, role, password };
-    console.log(req.body)
 
     const existingUser = await authService.findExistUser(email);
     if (existingUser) {
@@ -40,7 +39,8 @@ const userController = {
     await auditService.createAuditLog(data);
 
     res.status(200).json({
-      message: "สร้างผู้ใช้สำเร็จ",});
+      message: "สร้างผู้ใช้สำเร็จ",
+    });
   },
   // PUT
   updateUser: async (req, res) => {
@@ -62,8 +62,6 @@ const userController = {
       message: "อัปเดตผู้ใช้สำเร็จ",
     });
   },
-  
-  
 };
 
 export default userController;

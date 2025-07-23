@@ -4,8 +4,14 @@ import bcrypt from "bcryptjs";
 const userService = {
   getAllUsers: () => {
     return prisma.user.findMany({
+      omit: { password: true },
       include: {
-        employeeProfile: true,
+        employeeProfile: {
+          include: {
+            workPolicy: { select: { name: true } },
+            shift: { select: { name: true } },
+          },
+        },
       },
     });
   },
@@ -16,7 +22,12 @@ const userService = {
         id: userId,
       },
       include: {
-        employeeProfile: true,
+        employeeProfile: {
+          include: {
+            workPolicy: { select: { name: true } },
+            shift: { select: { name: true } },
+          },
+        },
       },
     });
   },
@@ -38,7 +49,6 @@ const userService = {
           },
         },
       },
-     
     });
   },
 
@@ -50,8 +60,6 @@ const userService = {
       data: updataData,
     });
   },
-
-  
 };
 
 export default userService;
