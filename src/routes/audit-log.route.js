@@ -4,7 +4,7 @@ import authMiddleware from "../middlewares/auth.middleware.js";
 
 const auditRoute = express.Router();
 
-// holidayRoute.use(authMiddleware.checkToken)
+auditRoute.use(authMiddleware.checkToken)
 
 auditRoute.get("/", authMiddleware.isRole('HR'), auditController.getAuditLog);
 
