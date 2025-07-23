@@ -1,3 +1,5 @@
+import auditService from "../services/audit-log.service.js";
+import authService from "../services/auth.service.js";
 import userService from "../services/user.service.js";
 import createError from "../utils/create-error.util.js";
 
@@ -9,7 +11,7 @@ const userController = {
   },
   // GET
   getUserById: async (req, res) => {
-    const id = req.params;
+    const { id } = req.params;
     const user = await userService.getUserById(id);
     if (!user) {
       createError(400, "ไม่พบผู้ใช้ที่ระบุ");
@@ -18,36 +20,50 @@ const userController = {
   },
   // POST
   createUser: async (req, res) => {
-    const { name, email, role, ...profileData } = req.body;
-    const userData = { name, email, role };
+    const { name, email, role, password, ...profileData } = req.body;
+    const userData = { name, email, role, password };
+    console.log(req.body)
+
+    const existingUser = await authService.findExistUser(email);
+    if (existingUser) {
+      createError(400, "อีเมลนี้ถูกใช้ไปแล้ว");
+    }
 
     const newUser = await userService.createUser(userData, profileData);
-    res.status(200).json(newUser);
+    const data = {
+      action: "CREATE",
+      relatedTable: "User",
+      relatedId: newUser.id,
+      detail: "สร้างผู้ใช้ใหม่",
+      userId: req.user.id, // Assuming req.user contains the authenticated user's info
+    };
+    await auditService.createAuditLog(data);
+
+    res.status(200).json({
+      message: "สร้างผู้ใช้สำเร็จ",});
   },
   // PUT
   updateUser: async (req, res) => {
     const { id } = req.params;
-    const updatedUser = await userService.updateUser(id, req.body);
-    res.status(200).json(updatedUser);
-  },
-  // GET
-  getProfileByUserId: async (req, res) => {
-    const { userId } = req.params;
-    const profile = await userService.getProfileByUserId(userId);
-    if (!profile) {
-      createError(400, "ไม่พบโปรไฟล์ที่ระบุ");
+    const existingUser = await userService.getUserById(id);
+    if (!existingUser) {
+      createError(400, "ไม่พบผู้ใช้ที่ระบุ");
     }
-    res.status(200).json(profile);
+    const newUser = await userService.updateUser(id, req.body);
+    const data = {
+      action: "UPDATE",
+      relatedTable: "User",
+      relatedId: newUser.id,
+      detail: "อัปเดตผู้ใช้",
+      userId: req.user.id, // Assuming req.user contains the authenticated user's info
+    };
+    await auditService.createAuditLog(data);
+    res.status(200).json({
+      message: "อัปเดตผู้ใช้สำเร็จ",
+    });
   },
-
-  updateProfileByUserId: async (req, res) => {
-    const { userId } = req.params;
-    const updatedProfile = await userService.updateProfileByUserId(
-      userId,
-      req.body
-    );
-    res.status(200).json(updatedProfile);
-  },
+  
+  
 };
 
 export default userController;

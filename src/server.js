@@ -13,4 +13,4 @@ process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 
 process.on("uncaughtException", () => shutdown("uncaughtException"));
-process.on("unhandledRejection", () => shutdown("unhandleRejection"));
+process.on("unhandledRejection", () => shutdown("unhandledRejection"));

@@ -1,10 +1,12 @@
 import express from "express";
 import authMiddleware from "../middlewares/auth.middleware.js";
-import userController from "../controllers/user.controller.js";
+import profileController from "../controllers/profile.controller.js";
 
 const profileRoute = express.Router();
 
-profileRoute.get("/:userId", authMiddleware.checkToken, userController.getProfileByUserId);
-profileRoute.put("/:userId", authMiddleware.checkToken, authMiddleware.isRole(["HR"]), userController.updateProfileByUserId);
+profileRoute.use(authMiddleware.checkToken);
+
+profileRoute.get("/:userId", profileController.getProfileByUserId);
+profileRoute.put("/:userId", authMiddleware.isRole(["HR"]), profileController.updateProfileByUserId);
 
 export default profileRoute;
