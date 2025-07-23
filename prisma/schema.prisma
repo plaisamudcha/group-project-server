@@ -27,11 +27,8 @@ model EmployeeProfile {
   shiftId        String?
   employmentType EmploymentType @default(FULLTIME)
   shift          Shift?         @relation(fields: [shiftId], references: [id])
-  user           User           @relation(fields: [userId], references: [id])
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   workPolicy     WorkPolicy     @relation(fields: [workPolicyId], references: [id])
-
-  @@index([shiftId], map: "EmployeeProfile_shiftId_fkey")
-  @@index([workPolicyId], map: "EmployeeProfile_workPolicyId_fkey")
 }
 
 model WorkPolicy {
