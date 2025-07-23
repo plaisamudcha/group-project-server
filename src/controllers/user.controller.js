@@ -1,3 +1,4 @@
+import auditService from "../services/audit-log.service.js";
 import userService from "../services/user.service.js";
 import createError from "../utils/create-error.util.js";
 
@@ -22,13 +23,33 @@ const userController = {
     const userData = { name, email, role };
 
     const newUser = await userService.createUser(userData, profileData);
-    res.status(200).json(newUser);
+    const data = {
+      action: "CREATE",
+      relatedTable: "User",
+      relatedId: newUser.id,
+      detail: "สร้างผู้ใช้ใหม่",
+      userId: req.user.id, // Assuming req.user contains the authenticated user's info
+    };
+    await auditService.createAuditLog(data);
+
+    res.status(200).json({
+      message: "สร้างผู้ใช้สำเร็จ",});
   },
   // PUT
   updateUser: async (req, res) => {
     const { id } = req.params;
-    const updatedUser = await userService.updateUser(id, req.body);
-    res.status(200).json(updatedUser);
+    const newUser = await userService.updateUser(id, req.body);
+    const data = {
+      action: "UPDATE",
+      relatedTable: "User",
+      relatedId: newUser.id,
+      detail: "อัปเดตผู้ใช้",
+      userId: req.user.id, // Assuming req.user contains the authenticated user's info
+    };
+    await auditService.createAuditLog(data);
+    res.status(200).json({
+      message: "อัปเดตผู้ใช้สำเร็จ",
+    });
   },
   
   
