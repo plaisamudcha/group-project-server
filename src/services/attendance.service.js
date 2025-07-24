@@ -4,11 +4,12 @@ import createError from "../utils/create-error.util.js";
 
 const attendanceService = {
   async clockIn(id) {
-
+    // console.log(' Log id',  id)
     const today = new Date();
     today.setHours(0, 0, 0, 0); //set ให้เวลาเป็น0:0:0:0ใช้เปรียบเทียบข้อมูลในวันเดียวกัน
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1); //24ชั้วโมงของ today+1 เป็น25:00 ก็คือเป็นค่าของวันพรุ่งนี้ 00:00
+
 
     const existing = await prisma.attendance.findFirst({
       where: {
@@ -23,12 +24,15 @@ const attendanceService = {
 
       createError(400, "วันนี้คุณลงเวลาเข้างานไปแล้ว");
     }
-    const profile = await prisma.employeeProfile.findUnique({
+
+    const profile = await prisma.employeeProfile.findFirst({
       where: { userId: id },
-      include: { workPolicy: true, 
-        // shift: true 
+      include: {
+        workPolicy: true,
+        shift: true 
       },
     });
+
     console.log('profile', profile)
     if (!profile) {
       createError(400, "ไม่พบข้อมูลพนักงาน");

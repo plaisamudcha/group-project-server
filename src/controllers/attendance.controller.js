@@ -3,7 +3,7 @@ const attendanceController = {
   // ---- Clock In ----
   clockIn: async (req, res) => {
     const userId = req.user.id;
-
+    // console.log('Log userId', userId)
     const attendance = await attendanceService.clockIn(userId);
 
     if (!attendance) {
