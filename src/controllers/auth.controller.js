@@ -1,5 +1,4 @@
 import authService from "../services/auth.service.js";
-import prisma from "../config/prisma.js";
 import createError from "../utils/create-error.util.js";
 import genTokenJWT from "../utils/jwt.util.js";
 
@@ -8,11 +7,10 @@ const authController = {
     const { name, email, password } = req.body;
 
     const existUser = await authService.findExistUser(email);
-    console.log(existUser);
     if (existUser) {
       createError(400, "email นี้ถูกใช้งานแล้ว");
     }
-    const newUser = await authService.register(name, email, password);
+    await authService.register(name, email, password);
     res.json({
       message: "สมัครสำเร็จ",
     });
