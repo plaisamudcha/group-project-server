@@ -38,14 +38,12 @@ const annualLeaveController = {
   },
   createEntitlement: async (req, res, next) => {
 
-    const { userId, year, leaveType, entitledDays,updateAt } = req.body;
-    console.log(updateAt)
+    const { userId, year, leaveType, entitledDays } = req.body;
     const newEntitlement = await annualLeaveService.createEntitlement({
       userId,
       year,
       leaveType,
       entitledDays,
-      updatedAt:updateAt
     });
     await auditService.createAuditLog({
       action: 'CREATE',

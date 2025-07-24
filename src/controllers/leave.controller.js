@@ -62,7 +62,7 @@ const leaveController = {
                 const newLeaveRequest = await leaveService.createLeaveRequest({
                     startDate: newStartDate,
                     endDate: newEndDate,
-                    // leaveDay: totalLeaveDays,
+                    leaveDays: totalLeaveDays,
                     leaveType,
                     reason,
                     userId
@@ -104,7 +104,7 @@ const leaveController = {
                         leaveRequest.userId,
                         leaveRequest.leaveType,
                         leaveRequest.startDate.getFullYear(),
-                        leaveRequest.leaveDay,
+                        leaveRequest.leaveDays,
                         tx
                     );
                 });
