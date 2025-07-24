@@ -22,15 +22,15 @@ const annualLeaveController = {
     const { id } = req.params;
     const { entitledDays, usedDays } = req.body;
 
-    if (req.user.role !== "HR") {
-      return res.status(403).json({ message: "คุณไม่มีสิทธิ์แก้ไขข้อมูลนี้" });
-    }
+    // if (req.user.role !== "HR") {
+    //   return res.status(403).json({ message: "คุณไม่มีสิทธิ์แก้ไขข้อมูลนี้" });
+    // }
 
-    if (typeof entitledDays !== "number" || typeof usedDays !== "number") {
-      return res
-        .status(400)
-        .json({ message: "entitledDays และ usedDays ต้องเป็นตัวเลข" });
-    }
+    // if (typeof entitledDays !== "number" || typeof usedDays !== "number") {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "entitledDays และ usedDays ต้องเป็นตัวเลข" });
+    // }
 
     const updatedEntitlement = await annualLeaveService.updateEntitlement(
       parseInt(id),

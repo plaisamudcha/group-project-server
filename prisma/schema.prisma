@@ -40,7 +40,7 @@ model WorkPolicy {
   allowedLateMinutesPerMonth Int
   deductIfLateOver           Int               @default(0)
   minHoursForHalfDay         Int
-  halfDayAbsentRule          Int
+  halfDayAbsentRule          Float
   remark                     String?
   attendances                Attendance[]
   employeeProfiles           EmployeeProfile[]
@@ -68,8 +68,8 @@ model Attendance {
   overtimeHours    Float             @default(0)
   status           StatusType        @default(PENDING)
   workPolicyId     Int
-  shiftId          Int
-  shift            Shift             @relation(fields: [shiftId], references: [id])
+  shiftId          Int?
+  shift            Shift?            @relation(fields: [shiftId], references: [id])
   user             User              @relation(fields: [userId], references: [id])
   workPolicy       WorkPolicy        @relation(fields: [workPolicyId], references: [id])
   leaveAdjustments LeaveAdjustment[]
@@ -80,7 +80,7 @@ model LeaveRequest {
   startDate   DateTime
   endDate     DateTime
   createdAt   DateTime          @default(now())
-  updateAt    DateTime          @updatedAt
+  updateAt    DateTime?         @updatedAt
   leaveType   LeaveType
   status      StatusLeave       @default(PENDING)
   reason      String
@@ -93,7 +93,7 @@ model LeaveAdjustment {
   id               Int          @id @default(autoincrement())
   leaveRequestId   Int
   deductionMinutes Int
-  adjustmentType   String
+  adjustmentType   StatusType
   attendanceId     Int
   attendance       Attendance   @relation(fields: [attendanceId], references: [id])
   leaveRequest     LeaveRequest @relation(fields: [leaveRequestId], references: [id])
@@ -109,7 +109,7 @@ model AuditLog {
   id           Int       @id @default(autoincrement())
   action       LogAction
   relatedTable String
-  relatedId    String
+  relatedId    Int
   detail       String
   createdAt    DateTime  @default(now())
   userId       String
@@ -117,14 +117,14 @@ model AuditLog {
 }
 
 model AnnualLeaveEntitlement {
-  id            Int      @id @default(autoincrement())
+  id            Int       @id @default(autoincrement())
   userId        String
   year          Int
-  leaveType     String
+  leaveType     LeaveType
   entitledDays  Float
-  usedDays      Float    @default(0)
-  remainingDays Float    @default(0)
-  updatedAt     DateTime @updatedAt
+  usedDays      Float     @default(0)
+  remainingDays Float     @default(0)
+  updatedAt     DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 }
