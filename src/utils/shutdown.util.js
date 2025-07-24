@@ -8,7 +8,7 @@ const shutdown = async (signal) => {
   } catch (err) {
     console.log("Error when disconnect", err);
   } finally {
-    process.exit(0)
+    process.exit(0);
   }
 };
 

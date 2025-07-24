@@ -5,19 +5,22 @@ const authService = {
   findExistUser: async (email) => {
     return await prisma.user.findUnique({
       where: {
-        email
-      }
-    })
+        email,
+      },
+      omit: {
+        password: true,
+      },
+    });
   },
   findId: async (id) => {
     return await prisma.user.findUnique({
-      where:{
-        id
+      where: {
+        id,
       },
-      omit:{
-        password: true
-      }
-    })
+      omit: {
+        password: true,
+      },
+    });
   },
   register: async (name, email, password) => {
     const hashedPassword = await bcrypt.hash(password, 12);
@@ -26,21 +29,23 @@ const authService = {
         name,
         email,
         password: hashedPassword,
-        role: "EMPLOYEE"
-      }
-    })
+        role: "EMPLOYEE",
+      },
+    });
   },
-  login: async (email, password) =>  {
+  login: async (email, password) => {
+    console.log(email, password);
     const user = await prisma.user.findUnique({
-      where: {email}
-    })
-    if(!user){
+      where: { email },
+    });
+    console.log(user);
+    if (!user) {
       return null;
     }
-    const isMatch = await bcrypt.compare(password, user.password)
-    return isMatch? user : null;
-  }
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.log(isMatch);
+    return isMatch ? user : null;
+  },
 };
-
 
 export default authService;

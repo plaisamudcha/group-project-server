@@ -1,10 +1,17 @@
 import prisma from "../config/prisma.js";
+import bcrypt from "bcryptjs";
 
 const userService = {
   getAllUsers: () => {
     return prisma.user.findMany({
+      omit: { password: true },
       include: {
-        employeeProfile: true,
+        employeeProfile: {
+          include: {
+            workPolicy: { select: { name: true } },
+            shift: { select: { name: true } },
+          },
+        },
       },
     });
   },
@@ -15,28 +22,32 @@ const userService = {
         id: userId,
       },
       include: {
-        employeeProfile: true,
+        employeeProfile: {
+          include: {
+            workPolicy: { select: { name: true } },
+            shift: { select: { name: true } },
+          },
+        },
       },
     });
   },
 
-  createUser: (userData, profileData) => {
+  createUser: async (userData, profileData) => {
+    const hashpassword = await bcrypt.hash(userData.password, 12);
     return prisma.user.create({
       data: {
         name: userData.name,
         email: userData.email,
         role: userData.role,
+        password: hashpassword,
 
         employeeProfile: {
           create: {
             employmentType: profileData.employmentType,
             workPolicyId: profileData.workPolicyId,
-            shiftId: profileData.shiftId,
+            shiftId: profileData?.shiftId || null,
           },
         },
-      },
-      include: {
-        employeeProfile: true,
       },
     });
   },
@@ -47,23 +58,6 @@ const userService = {
         id: userId,
       },
       data: updataData,
-    });
-  },
-
-  getProfileByUserId: (userId) => {
-    return prisma.employeeProfile.findUnique({
-      where: {
-        userId: userId,
-      },
-    });
-  },
-
-  updateProfileByUserId: (userId, profileData) => {
-    return prisma.employeeProfile.update({
-      where: {
-        userId: userId,
-      },
-      data: profileData,
     });
   },
 };

@@ -21,16 +21,16 @@ app.use(morgan("dev"));
 app.use(cors());
 
 app.use("/auth", authRoute);
-app.use("/users", userRoute);
-app.use("/profiles", profileRoute);
-app.use("/attendance", attendanceRoute);
-app.use("/leaves", leaveRoute);
-app.use("/work-policies", workPolicyRoute);
-app.use("/shifts", shiftsRoute);
-app.use("/leave-adjustments", leaveAdjustmentRoute);
-app.use("/holidays", holidayRoute);
-app.use("/audit-logs", auditRoute);
-app.use("/aunnual-leave", annualLeaveRoute);
+app.use("/api/users", userRoute);
+app.use("/api/profiles", profileRoute);
+app.use("/api/attendance", attendanceRoute);
+app.use("/api/leaves", leaveRoute);
+app.use("/api/work-policies", workPolicyRoute);
+app.use("/api/shifts", shiftsRoute);
+app.use("/api/leave-adjustments", leaveAdjustmentRoute);
+app.use("/api/holidays", holidayRoute);
+app.use("/api/audit-logs", auditRoute);
+app.use("/api/aunnual-leave", annualLeaveRoute);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
