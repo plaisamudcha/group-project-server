@@ -10,6 +10,7 @@ annualLeaveRoute.get(
   annualLeaveController.getAllEntitlements
 );
 annualLeaveRoute.get("/user", annualLeaveController.getUserEntitlements);
+annualLeaveRoute.post("/", authMiddleware.isRole("HR"),annualLeaveController.createEntitlement);
 annualLeaveRoute.patch(
   "/:id",
   authMiddleware.isRole("HR"),

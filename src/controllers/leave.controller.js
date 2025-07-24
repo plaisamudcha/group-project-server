@@ -1,6 +1,9 @@
+import prisma from "../config/prisma.js";
+import annualLeaveService from "../services/annualLeave.service.js";
 import holidayService from "../services/holiday.service.js";
 import leaveService from "../services/leave.service.js";
 import createError from "../utils/create-error.util.js";
+import calculateLeaveDays from "../utils/calculateLeaveDays.js"
 const leaveController = {
     getAllLeaves: async (req, res) => {
         const leavedata = await leaveService.GetAllLeave()
@@ -29,19 +32,22 @@ const leaveController = {
         const { startDate, endDate, leaveType, reason } = req.body
         const newStartDate = new Date(startDate);
         const newEndDate = new Date(endDate);
-        const holidayFound = await holidayService.checkIfOnHoliday(newStartDate, holidayFound)
+        const holidayFound = await holidayService.checkIfOnHoliday(newStartDate, endDate)
         const totalLeaveDays = calculateLeaveDays(newStartDate, newEndDate);
+        console.log("first")
         if (totalLeaveDays <= 0) {
+               console.log("second")
             return res.status(400).json({ message: "จำนวนวันลาที่คำนวณได้ต้องมากกว่า 0" });
         }
         if (holidayFound) {
+               console.log("3")
             return res.status(400).json({
                 message: "ไม่สามารถสร้างว้นลาตรงกับวันหยุดพิเศษได้"
             });
         }
         const leaveYear = newStartDate.getFullYear();
-        const entitlement = await entitlementService.checkBalance(userId, totalLeaveDays, leaveType, leaveYear);
-        const overlappingLeave = await leaveService.CheckOverLaptime(userId, newStartDate, newEndDate)
+        const entitlement = await annualLeaveService.checkBalance(userId, totalLeaveDays, leaveType, leaveYear);
+        const overlappingLeave = await leaveService.checkOverLaptime(userId, newStartDate, newEndDate)
         if (overlappingLeave) {
             return res.status(409).json({
                 message: "คุณส่งคำขอวันลาซ้ำ",
@@ -56,13 +62,13 @@ const leaveController = {
                 const newLeaveRequest = await leaveService.createLeaveRequest({
                     startDate: newStartDate,
                     endDate: newEndDate,
-                    leaveDay: totalLeaveDays,
+                    // leaveDay: totalLeaveDays,
                     leaveType,
                     reason,
                     userId
                 }, tx);
 
-                await entitlementService.deductFromBalance(entitlement.id, totalLeaveDays, tx);
+                await annualLeaveService.deductFromBalance(entitlement.id, totalLeaveDays, tx);
 
                 return newLeaveRequest;
             });
@@ -75,11 +81,11 @@ const leaveController = {
     },
      updateLeaveStatus: async (req, res, next) =>  {
             
-              const leaveRequestId = req.params.id
+            const leaveRequestId = Number(req.params.id)
             const { status } = req.body;
-
+            const userPerformingAction = req.user.id
         
-            const leaveRequest = await leaveService.getLeaveDetails(leaveRequestId); 
+            const leaveRequest = await leaveService.getLeaveDetails(Number(leaveRequestId)); 
             if (!leaveRequest) {
                 return res.status(400).json({ message: "ไม่พบใบคำขอลานี้" });
             }
@@ -93,8 +99,8 @@ const leaveController = {
             
                 await prisma.$transaction(async (tx) => {
                 
-                    await leaveService.updateStatus(leaveId, 'REJECTED', tx); // ใช้ Service
-                    await entitlementService.refundBalance( 
+                    await leaveService.updateStatus(leaveRequestId, 'REJECTED', tx); // ใช้ Service
+                    await annualLeaveService.refundBalance( 
                         leaveRequest.userId,
                         leaveRequest.leaveType,
                         leaveRequest.startDate.getFullYear(),
@@ -106,7 +112,7 @@ const leaveController = {
                         data: {
                             action: 'REJECT',
                             relatedTable: 'LeaveRequest',
-                            relatedId: leaveId,
+                            relatedId: leaveRequestId,
                             detail: `Leave request rejected by user ID: ${userPerformingAction.id}`,
                             userId: userPerformingAction.id
                         }
@@ -115,12 +121,12 @@ const leaveController = {
 
             }  else { 
                 const updatedLeaveRequest = await prisma.$transaction(async (tx) => {
-                    const leave = await leaveService.updateStatus(leaveId, 'APPROVED', tx);
+                    const leave = await leaveService.updateStatus(leaveRequestId, 'APPROVED', tx);
                     await tx.auditLog.create({
                         data: {
                             action: 'APPROVE',
                             relatedTable: 'LeaveRequest',
-                            relatedId: leaveId,
+                            relatedId: leaveRequestId,
                             detail: `Leave request approved by user ID: ${userPerformingAction.id}`,
                             userId: userPerformingAction.id
                         }
