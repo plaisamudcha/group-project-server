@@ -16,3 +16,27 @@ Content-Type: application/json
     "email": "sian@gmail.com",
     "password": "123456"
 }
+
+
+###
+GET  http://localhost:3000/audit-logs HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImYzYzczOWJmLTIzNDQtNDhhOC1hY2E2LTMyNmVmNmRiYzhiYSIsInJvbGUiOiJIUiIsImlhdCI6MTc1MzMyODQwNiwiZXhwIjoxNzUzNDE0ODA2fQ.Dmx2bhe5U3XgFLMcRmGLc561Wgnbe8z6cv1NQ_jKYHA
+
+
+###
+GET  http://localhost:3000/profiles/f3c739bf-2344-48a8-aca6-326ef6dbc8ba HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImYzYzczOWJmLTIzNDQtNDhhOC1hY2E2LTMyNmVmNmRiYzhiYSIsInJvbGUiOiJIUiIsImlhdCI6MTc1MzMyODM0NywiZXhwIjoxNzUzNDE0NzQ3fQ.KDpTsPM5sjrGnyeI6hStI-P0w6NsZLHYfN_Nd4Zatfg
+
+
+###
+PUT http://localhost:3000/profiles/b37673bf-deac-442e-8beb-c42189dd6541 HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImYzYzczOWJmLTIzNDQtNDhhOC1hY2E2LTMyNmVmNmRiYzhiYSIsInJvbGUiOiJIUiIsImlhdCI6MTc1MzI1ODUxNSwiZXhwIjoxNzUzMzQ0OTE1fQ.cpdBA13Ytk28z1ktwy2iuOBYhNSVAuS0fT1muu72aFc
+Content-Type: application/json
+
+{
+    "employmentType": "PARTTIME"
+}
+
+
+
+

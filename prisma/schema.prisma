@@ -9,7 +9,7 @@ datasource db {
 }
 
 model User {
-  id                      String                   @id @default(uuid())
+  id                      Int                      @id @default(autoincrement())
   name                    String
   email                   String                   @unique
   role                    RoleType
@@ -23,7 +23,7 @@ model User {
 
 model EmployeeProfile {
   id             Int            @id @default(autoincrement())
-  userId         String         @unique
+  userId         Int            @unique
   workPolicyId   Int
   shiftId        Int?
   employmentType EmploymentType @default(FULLTIME)
@@ -60,7 +60,7 @@ model Shift {
 
 model Attendance {
   id               Int               @id @default(autoincrement())
-  userId           String
+  userId           Int
   date             DateTime
   clockIn          DateTime?
   clockOut         DateTime?
@@ -86,12 +86,13 @@ model LeaveRequest {
   id          Int               @id @default(autoincrement())
   startDate   DateTime
   endDate     DateTime
+  leaveDays   Float
   createdAt   DateTime          @default(now())
   updateAt    DateTime?         @updatedAt
   leaveType   LeaveType
   status      StatusLeave       @default(PENDING)
   reason      String
-  userId      String
+  userId      Int
   adjustments LeaveAdjustment[]
   user        User              @relation(fields: [userId], references: [id])
 
@@ -112,7 +113,7 @@ model LeaveAdjustment {
 }
 
 model Holiday {
-  id   String   @id @default(uuid())
+  id   Int      @id @default(autoincrement())
   date DateTime
   name String
 }
@@ -124,7 +125,7 @@ model AuditLog {
   relatedId    Int
   detail       String
   createdAt    DateTime  @default(now())
-  userId       String
+  userId       Int
   user         User      @relation(fields: [userId], references: [id])
 
   @@index([userId], map: "AuditLog_userId_fkey")
@@ -132,12 +133,12 @@ model AuditLog {
 
 model AnnualLeaveEntitlement {
   id            Int       @id @default(autoincrement())
-  userId        String
+  userId        Int
   year          Int
   leaveType     LeaveType
   entitledDays  Float
   usedDays      Float     @default(0)
-  remainingDays Float     @default(0)
+  remainingDays Float
   updatedAt     DateTime  @updatedAt
   user          User      @relation(fields: [userId], references: [id])
 
