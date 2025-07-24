@@ -30,6 +30,9 @@ model EmployeeProfile {
   shift          Shift?         @relation(fields: [shiftId], references: [id])
   user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   workPolicy     WorkPolicy     @relation(fields: [workPolicyId], references: [id])
+
+  @@index([shiftId], map: "EmployeeProfile_shiftId_fkey")
+  @@index([workPolicyId], map: "EmployeeProfile_workPolicyId_fkey")
 }
 
 model WorkPolicy {
@@ -73,6 +76,10 @@ model Attendance {
   user             User              @relation(fields: [userId], references: [id])
   workPolicy       WorkPolicy        @relation(fields: [workPolicyId], references: [id])
   leaveAdjustments LeaveAdjustment[]
+
+  @@index([shiftId], map: "Attendance_shiftId_fkey")
+  @@index([userId], map: "Attendance_userId_fkey")
+  @@index([workPolicyId], map: "Attendance_workPolicyId_fkey")
 }
 
 model LeaveRequest {
@@ -88,6 +95,8 @@ model LeaveRequest {
   userId      Int
   adjustments LeaveAdjustment[]
   user        User              @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "LeaveRequest_userId_fkey")
 }
 
 model LeaveAdjustment {
@@ -98,6 +107,9 @@ model LeaveAdjustment {
   attendanceId     Int
   attendance       Attendance   @relation(fields: [attendanceId], references: [id])
   leaveRequest     LeaveRequest @relation(fields: [leaveRequestId], references: [id])
+
+  @@index([attendanceId], map: "LeaveAdjustment_attendanceId_fkey")
+  @@index([leaveRequestId], map: "LeaveAdjustment_leaveRequestId_fkey")
 }
 
 model Holiday {
@@ -115,6 +127,8 @@ model AuditLog {
   createdAt    DateTime  @default(now())
   userId       Int
   user         User      @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "AuditLog_userId_fkey")
 }
 
 model AnnualLeaveEntitlement {
@@ -126,8 +140,9 @@ model AnnualLeaveEntitlement {
   usedDays      Float     @default(0)
   remainingDays Float
   updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id])
 
-  user User @relation(fields: [userId], references: [id])
+  @@index([userId], map: "AnnualLeaveEntitlement_userId_fkey")
 }
 
 enum EmploymentType {
