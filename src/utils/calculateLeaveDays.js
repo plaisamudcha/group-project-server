@@ -5,7 +5,7 @@
  * @param {Date} endDate - The end date and time of the leave.
  * @returns {number} The total number of leave days (e.g., 4.5).
  */
-export function calculateLeaveDays(startDate, endDate) {
+export default function calculateLeaveDays(startDate, endDate) {
     let totalLeaveDays = 0;
     const WORK_DAY_START_HOUR = 9;
     const WORK_DAY_END_HOUR = 18;

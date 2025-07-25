@@ -4,8 +4,8 @@ const auditService = {
     fetchAuditLog: () => {
         return prisma.auditLog.findMany()
     },
-    createAuditLog: (data) => {
-        return prisma.auditLog.create({data})
+    createAuditLog: (data,tx = prisma) => {
+        return tx.auditLog.create({data})
     }
 };
 
