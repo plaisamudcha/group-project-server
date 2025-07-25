@@ -1,3 +1,4 @@
+import prisma from "../config/prisma.js";
 import annualLeaveService from "../services/annualLeave.service.js";
 import auditService from "../services/audit-log.service.js";
 
@@ -18,7 +19,7 @@ const annualLeaveController = {
     const { id } = req.params;
     const { entitledDays, usedDays } = req.body;
     const updatedEntitlement = await annualLeaveService.updateEntitlement(
-       parseInt(id) ,
+      parseInt(id),
       {
         entitledDays,
         usedDays,
@@ -38,25 +39,30 @@ const annualLeaveController = {
   },
   createEntitlement: async (req, res, next) => {
 
-    const {  year, leaveType, entitledDays } = req.body;
+    const { year, leaveType, entitledDays } = req.body;
     const userId = parseInt(req.body.userId)
-    const newEntitlement = await annualLeaveService.createEntitlement({
-      userId,
-      year,
-      leaveType,
-      entitledDays,
-    });
-    await auditService.createAuditLog({
-      action: 'CREATE',
-      relatedTable: 'AnnualLeaveEntitlement',
-      relatedId: newEntitlement.id,
-      detail: `Created entitlement for user ${userId} (${leaveType}, ${year}) with ${entitledDays} days.`,
-      userId: req.user.id,
-     
-    });
+
+    const result = prisma.$transaction(async (tx) => {
+      const newEntitlement = await annualLeaveService.createEntitlement({
+        userId,
+        year,
+        leaveType,
+        entitledDays,
+      },tx);
+      await auditService.createAuditLog({
+        action: 'CREATE',
+        relatedTable: 'AnnualLeaveEntitlement',
+        relatedId: newEntitlement.id,
+        detail: `Created entitlement for user ${userId} (${leaveType}, ${year}) with ${entitledDays} days.`,
+        userId: req.user.id,
+
+      },tx);
+    return newEntitlement
+    })
+
     res.status(201).json({
       message: "สร้างโควต้าวันลาสำเร็จ",
-      data: newEntitlement,
+      data: result,
     });
   },
 }
