@@ -19,7 +19,7 @@ const annualLeaveController = {
     const { id } = req.params;
     const { entitledDays, usedDays } = req.body;
 
-    
+
     const updatedEntitlement = await annualLeaveService.updateEntitlement(
       parseInt(id),
       {
@@ -40,32 +40,41 @@ const annualLeaveController = {
     });
   },
   createEntitlement: async (req, res, next) => {
+    try {
+      const { year, leaveType, entitledDays } = req.body;
+      const userId = parseInt(req.body.userId)
 
-    const { year, leaveType, entitledDays } = req.body;
-    const userId = parseInt(req.body.userId)
+      const result = prisma.$transaction(async (tx) => {
+        const newEntitlement = await annualLeaveService.createEntitlement({
+          userId,
+          year,
+          leaveType,
+          entitledDays,
+        }, tx);
+        await auditService.createAuditLog({
+          action: 'CREATE',
+          relatedTable: 'AnnualLeaveEntitlement',
+          relatedId: newEntitlement.id,
+          detail: `Created entitlement for user ${userId} (${leaveType}, ${year}) with ${entitledDays} days.`,
+          userId: req.user.id,
 
-    const result = prisma.$transaction(async (tx) => {
-      const newEntitlement = await annualLeaveService.createEntitlement({
-        userId,
-        year,
-        leaveType,
-        entitledDays,
-      },tx);
-      await auditService.createAuditLog({
-        action: 'CREATE',
-        relatedTable: 'AnnualLeaveEntitlement',
-        relatedId: newEntitlement.id,
-        detail: `Created entitlement for user ${userId} (${leaveType}, ${year}) with ${entitledDays} days.`,
-        userId: req.user.id,
+        }, tx);
+        return newEntitlement
+      })
 
-      },tx);
-    return newEntitlement
-    })
+      res.status(201).json({
+        message: "สร้างโควต้าวันลาสำเร็จ",
+        data: result,
+      });
+    } catch (error) {
 
-    res.status(201).json({
-      message: "สร้างโควต้าวันลาสำเร็จ",
-      data: result,
-    });
+      if (error.code === 'P2002') {
+        const { userId, year, leaveType } = req.body;
+        return createError(409, `โควต้าสำหรับพนักงาน ID ${userId} ในปี ${year} ประเภท ${leaveType} มีอยู่แล้ว`);
+      }
+      next(error);
+    }
+
   },
 }
 export default annualLeaveController;
