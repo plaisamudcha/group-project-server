@@ -1,6 +1,8 @@
 import { date, number, object, ref, string } from "yup";
 import { LogAction } from "../../generated/prisma/client.js";
 
+//นี่ก็ไม่ได้ใช้
+
 const logAction = Object.values(LogAction);
 
 const auditLogSchema = {
