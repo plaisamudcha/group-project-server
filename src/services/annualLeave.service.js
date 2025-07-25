@@ -62,11 +62,11 @@ const annualLeaveService = {
     },
 
   
-    updateEntitlement: async (id, data) => {
+    updateEntitlement: async (id, data,tx=prisma) => {
         
         const remainingDays = data.entitledDays - data.usedDays;
 
-        return prisma.annualLeaveEntitlement.update({
+        return tx.annualLeaveEntitlement.update({
             where: { id: id },
             data: {
                 entitledDays: data.entitledDays,
@@ -75,9 +75,9 @@ const annualLeaveService = {
             },
         });
     },
-      createEntitlement: async (data) => {
+      createEntitlement: async (data,tx=prisma) => {
         const remainingDays = data.entitledDays;
-        return prisma.annualLeaveEntitlement.create({
+        return tx.annualLeaveEntitlement.create({
             data: {
                 userId: data.userId,
                 year: data.year,
