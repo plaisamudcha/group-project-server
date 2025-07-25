@@ -18,7 +18,7 @@ const annualLeaveController = {
     const { id } = req.params;
     const { entitledDays, usedDays } = req.body;
     const updatedEntitlement = await annualLeaveService.updateEntitlement(
-      { where: { id: parseInt(id) } },
+       parseInt(id) ,
       {
         entitledDays,
         usedDays,
@@ -38,7 +38,8 @@ const annualLeaveController = {
   },
   createEntitlement: async (req, res, next) => {
 
-    const { userId, year, leaveType, entitledDays } = req.body;
+    const {  year, leaveType, entitledDays } = req.body;
+    const userId = parseInt(req.body.userId)
     const newEntitlement = await annualLeaveService.createEntitlement({
       userId,
       year,
