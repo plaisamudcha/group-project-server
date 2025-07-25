@@ -1,3 +1,4 @@
+import prisma from "../config/prisma.js";
 import shiftService from "../services/shift.service.js";
 
 const shiftController = {
@@ -7,8 +8,27 @@ const shiftController = {
   },
   createShift: async (req, res) => {
     const { name, inTime, outTime } = req.body;
-    await shiftService.createShift(name, inTime, outTime);
-    res.json({ message: "สร้างข้อมูลสำเร็จ" });
+    const result = await prisma.$transaction(async (tx) => {
+      const newShift = await shiftService.createShift(
+        {
+          name,
+          inTime,
+          outTime,
+        },
+        tx
+      );
+      await auditLogService.createAuditLog(
+        {
+          action: "create",
+          entity: "shift",
+          entityId: newShift.id,
+          userId: req.user.id,
+        },
+        tx
+      );
+      return newShift;
+    });
+    res.json({ message: "สร้างข้อมูลสำเร็จ", result });
   },
   updateShift: async (req, res) => {
     const { id } = req.params;
