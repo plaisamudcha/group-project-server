@@ -1,23 +1,24 @@
 import prisma from "../src/config/prisma.js";
-
-const baseDate = "1970-01-01";
+import bcrypt from "bcryptjs";
 
 const workPolicies = [
   {
-    policyName: "ปกติ",
+    name: "ปกติ",
     startTime: "08:30",
     endTime: "17:30",
     allowedLateMinutesPerMonth: 60,
-    deductIfLateOver: true,
-    halfDayAbsentRule: "AFTER_LUNCH",
+    minHoursForHalfDay: 4,
+    halfDayAbsentRule: 0.5,
+    deductIfLateOver: 0,
   },
   {
-    policyName: "นักศึกษาฝึกงาน",
+    name: "นักศึกษาฝึกงาน",
     startTime: "09:00",
     endTime: "16:00",
     allowedLateMinutesPerMonth: 30,
-    deductIfLateOver: false,
-    halfDayAbsentRule: "NONE",
+    minHoursForHalfDay: 4,
+    halfDayAbsentRule: 0.5,
+    deductIfLateOver: 0,
   },
   // เพิ่มเติมได้ตามต้องการ
 ];
@@ -35,11 +36,10 @@ const holidays2025 = [
 ];
 
 async function main() {
-  await prisma.workPolicy.deleteMany();
-  await prisma.holiday.deleteMany();
   console.log("🌱 Seeding Work Policies...");
-  for (const policy of workPolicies) {
-    await prisma.workPolicy.create({ data: policy });
+  const firstPolicy = await prisma.workPolicy.create({ data: workPolicies[0] }); // ⬅ สร้างตัวแรกไว้เก็บ ID
+  for (let i = 1; i < workPolicies.length; i++) {
+    await prisma.workPolicy.create({ data: workPolicies[i] });
   }
 
   console.log("📅 Seeding Holidays...");
