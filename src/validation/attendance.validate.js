@@ -7,13 +7,29 @@ const statusType = Object.values(StatusType);
 
 const attendanceSchema = {
   createOrUpdateAttendance: object({
-    date: date().required("กรุณาใส่วันทำงาน"),
-    clockIn: date().nullable(),
-    clockOut: date().nullable()
+    date: date()
+      .nullable()
+      .transform((value, originalValue) =>
+        originalValue === "" ? null : new Date(originalValue)
+      )
+      .typeError("กรุณากรอกวันที่ให้ถูกต้อง") 
+      .required("กรุณาใส่วันทำงาน"),
+    clockIn: date()
+      .nullable()
+      .transform((value, originalValue) =>
+        originalValue === "" ? null : new Date(originalValue)
+      )
+      .typeError("กรุณากรอกวันที่ให้ถูกต้อง"),
+    clockOut: date()
+      .nullable()
       .test("is-after", "เวลาออกต้องมากกว่าเวลาเข้า", function (clockOut) {
         const { clockIn } = this.parent;
         return !clockOut || !clockIn || clockOut > clockIn;
-      }),
+      })
+      .transform((value, originalValue) =>
+        originalValue === "" ? null : new Date(originalValue)
+      )
+      .typeError("กรุณากรอกวันที่ให้ถูกต้อง"),
     status: string().oneOf(statusType, "status ไม่ถูกต้อง"),
     workPolicyId: number()
       .integer("กรุณาใส่จำนวนเต็มบวก")

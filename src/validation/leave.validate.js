@@ -8,8 +8,20 @@ const statusType = Object.values(StatusLeave);
 
 const leaveSchema = {
   createOrUpdateLeaveRequest: object({
-    startDate: date().required("กรุณาใส่วันลา"),
-    endDate: date().required("กรุณาใส่วันลา").min(ref("startDate"), "วันสิ้นสุดต้องมากกว่าวันเริ่ม"),
+    startDate: date()
+      .nullable()
+      .transform((value, originalValue) =>
+        originalValue === "" ? null : new Date(originalValue)
+      )
+      .typeError("กรุณากรอกวันที่ให้ถูกต้อง") 
+      .required("กรุณาใส่วันลา"),
+    endDate: date()
+      .nullable()
+      .transform((value, originalValue) =>
+        originalValue === "" ? null : new Date(originalValue)
+      )
+      .typeError("กรุณากรอกวันที่ให้ถูกต้อง") 
+      .required("กรุณาใส่วันลา").min(ref("startDate"), "วันสิ้นสุดต้องมากกว่าวันเริ่ม"),
     leaveType: string().oneOf(leaveType, "leaveType ไม่ถูกต้อง"),
     status: string().oneOf(statusType, "status ไม่ถูกต้อง"),
     reason: string().required("กรุณาใส่เหตุผล").max(500, "เหตุผลยาวเกินไป"),

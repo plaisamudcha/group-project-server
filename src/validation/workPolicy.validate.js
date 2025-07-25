@@ -5,12 +5,24 @@ import { date, number, object, ref, string } from "yup";
 const workPolicySchema = {
   createOrUpdateWorkPolicy: object({
     name: string().required("กรุณาใส่ชื่อ"),
-    startTime: date().required("กรุณาใส่เวลาเริ่มงาน"),
-    endTime: date().required("กรุณาใส่เวลาเลิกงาน")
+    startTime: date()
+      .nullable()
+      .transform((value, originalValue) =>
+        originalValue === "" ? null : new Date(originalValue)
+      )
+      .typeError("กรุณากรอกวันที่ให้ถูกต้อง")
+      .required("กรุณาใส่เวลาเริ่มงาน"),
+    endTime: date()
+      .nullable()
       .test("is-after", "เวลาเลิกต้องมากกว่าเวลาเริ่ม", function (endTime) {
         const { startTime } = this.parent;
         return !endTime || !startTime || endTime > startTime;
-      }),
+      })
+      .transform((value, originalValue) =>
+        originalValue === "" ? null : new Date(originalValue)
+      )
+      .typeError("กรุณากรอกวันที่ให้ถูกต้อง")
+      .required("กรุณาใส่เวลาเลิกงาน"),
     allowedLateMinutesPerMonth: number()
       .integer("กรุณาใส่จำนวนเต็มบวก")
       .positive("กรุณาใส่จำนวนเต็มบวก")
