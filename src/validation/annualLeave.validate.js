@@ -5,12 +5,12 @@ const leaveType = Object.values(LeaveType);
 
 const leaveAnnualSchema = {
   createOrUpdateLeaveAnnual: object({
-    userId: string().required("กรุณาใส่ UserId"),
+    userId: string().required("กรุณาใส่ ID ของ User"),
     year: number()
       .integer("กรุณาใส่จำนวนเต็มบวก")
       .positive("กรุณาใส่จำนวนเต็มบวก")
       .required("กรุณาใส่ปีที่ลา"),
-    leaveType: string().oneOf(leaveType, "leveType ไม่ถูกต้อง"),
+    leaveType: string().oneOf(leaveType, "ประเภทลาไม่ถูกต้อง"),
     entitledDays: number()
       .positive("กรุณาใส่จำนวนบวก")
       .required("กรุณาใส่จำนวนวันลา"),

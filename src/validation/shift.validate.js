@@ -2,27 +2,35 @@ import { date, number, object, ref, string } from "yup";
 
 // outtime (ต้องเป็นเวลาที่มากกว่าตอนเข้า)
 
+//เช็ครูปแบบเวลา
+const isValidTime = (value) => {
+  return dayjs(value, "HH:mm", true).isValid();
+};
+
+//เช็คความต่างเวลา
+const isAfter = (start, end) => {
+  return dayjs(end, 'HH-mm').isAfter(dayjs(start, 'HH-mm'))
+}
+
 const shiftSchema = {
   createOrUpdateShift: object({
-    name: string().required("กรุณาใส่ชื่อ"),
-    inTime: date()
+    name: string().required("กรุณาใส่ชื่อกะ"),
+    inTime: string()
+      .required("กรุณาใส่เวลาเริ่มงาน")
       .nullable()
-      .transform((value, originalValue) =>
-        originalValue === "" ? null : new Date(originalValue)
-      )
-      .typeError("กรุณากรอกวันที่ให้ถูกต้อง")
-      .required("กรุณาใส่เวลาเริ่มงาน"),
+      .test("valid-time", "รูปแบบเวลาเริ่มไม่ถูกต้อง", (value) =>
+        value ? isValidTime(value) : null
+      ),
     outTime: date()
+      .required("กรุณาใส่เวลาเลิกงาน")
       .nullable()
-      .test("is-after", "เวลาออกต้องมากกว่าเวลาเข้า", function (outTime) {
-        const { inTime } = this.parent;
-        return !outTime || !inTime || outTime > inTime;
-      })
-      .transform((value, originalValue) =>
-        originalValue === "" ? null : new Date(originalValue)
+      .test("valid-time", "รูปแบบเวลาเลิกไม่ถูกต้อง", (value) =>
+        value ? isValidTime(value) : null
       )
-      .typeError("กรุณากรอกวันที่ให้ถูกต้อง")
-      .required("กรุณาใส่เวลาเลิกงาน"),
+      .test("is-after", "เวลาเลิกงานต้องมากกว่าเวลาเริ่มงาน", function (outTime) {
+        const { inTime } = this.parent;
+        return !outTime || !inTime || isAfter(inTime, outTime);
+      }),
   }),
 };
 

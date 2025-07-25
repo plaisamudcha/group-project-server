@@ -2,27 +2,34 @@ import { date, number, object, ref, string } from "yup";
 
 // endTime (ต้องเป็นเวลาที่มากกว่าตอนเข้า)
 
+//เช็ครูปแบบเวลา
+const isValidTime = (value) => {
+  return dayjs(value, "HH:mm", true).isValid();
+};
+
+//เช็คความต่างเวลา
+const isAfter = (start, end) => {
+  return dayjs(end, 'HH-mm').isAfter(dayjs(start, 'HH-mm'))
+}
+
 const workPolicySchema = {
   createOrUpdateWorkPolicy: object({
-    name: string().required("กรุณาใส่ชื่อ"),
-    startTime: date()
+    name: string().required("กรุณาใส่ชื่อ นโยบายการทำงาน"),
+    startTime: string()
+      .required("กรุณาใส่เวลาเริ่มงาน")
       .nullable()
-      .transform((value, originalValue) =>
-        originalValue === "" ? null : new Date(originalValue)
-      )
-      .typeError("กรุณากรอกวันที่ให้ถูกต้อง")
-      .required("กรุณาใส่เวลาเริ่มงาน"),
-    endTime: date()
+      .test("valid-time", "รูปแบบเวลาเริ่มไม่ถูกต้อง", (value) =>
+        value ? isValidTime(value) : null
+      ),
+    endTime: string()
+      .required("กรุณาใส่เวลาเริ่มงาน")
       .nullable()
-      .test("is-after", "เวลาเลิกต้องมากกว่าเวลาเริ่ม", function (endTime) {
+      .test("valid-time", "รูปแบบเวลาเลิกไม่ถูกต้อง", (value) =>
+        value ? isValidTime(value) : null
+      ).test("is-after", "เวลาเลิกต้องมากกว่าเวลาเริ่ม", function (endTime) {
         const { startTime } = this.parent;
-        return !endTime || !startTime || endTime > startTime;
-      })
-      .transform((value, originalValue) =>
-        originalValue === "" ? null : new Date(originalValue)
-      )
-      .typeError("กรุณากรอกวันที่ให้ถูกต้อง")
-      .required("กรุณาใส่เวลาเลิกงาน"),
+        return !endTime || !startTime || isAfter(startTime, endTime);
+      }),
     allowedLateMinutesPerMonth: number()
       .integer("กรุณาใส่จำนวนเต็มบวก")
       .positive("กรุณาใส่จำนวนเต็มบวก")
