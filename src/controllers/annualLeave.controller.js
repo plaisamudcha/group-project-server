@@ -1,6 +1,7 @@
 import prisma from "../config/prisma.js";
 import annualLeaveService from "../services/annualLeave.service.js";
 import auditService from "../services/audit-log.service.js";
+import createError from "../utils/create-error.util.js";
 
 const annualLeaveController = {
   getAllEntitlements: async (req, res, next) => {
@@ -44,7 +45,7 @@ const annualLeaveController = {
       const { year, leaveType, entitledDays } = req.body;
       const userId = parseInt(req.body.userId)
 
-      const result = prisma.$transaction(async (tx) => {
+      const result = await prisma.$transaction(async (tx) => {
         const newEntitlement = await annualLeaveService.createEntitlement({
           userId,
           year,
