@@ -1,4 +1,5 @@
 import annualLeaveService from "../services/annualLeave.service.js";
+import auditService from "../services/audit-log.service.js";
 
 const annualLeaveController = {
   getAllEntitlements: async (req, res, next) => {
@@ -7,11 +8,6 @@ const annualLeaveController = {
   },
 
   getUserEntitlements: async (req, res, next) => {
-    // const userId = req.params.id;
-    // if (req.user.role !== "HR" && req.user.id !== userId) {
-    //   return res.status(403).json({ message: "คุณไม่มีสิทธิ์ดูข้อมูลนี้" });
-    // }
-
     const entitlements = await annualLeaveService.getEntitlementsByUserId(
       req.user.id
     );
@@ -21,29 +17,47 @@ const annualLeaveController = {
   updateEntitlement: async (req, res, next) => {
     const { id } = req.params;
     const { entitledDays, usedDays } = req.body;
-
-    // if (req.user.role !== "HR") {
-    //   return res.status(403).json({ message: "คุณไม่มีสิทธิ์แก้ไขข้อมูลนี้" });
-    // }
-
-    // if (typeof entitledDays !== "number" || typeof usedDays !== "number") {
-    //   return res
-    //     .status(400)
-    //     .json({ message: "entitledDays และ usedDays ต้องเป็นตัวเลข" });
-    // }
-
     const updatedEntitlement = await annualLeaveService.updateEntitlement(
-      parseInt(id),
+       parseInt(id) ,
       {
         entitledDays,
         usedDays,
       }
     );
-
+    await auditService.createAuditLog({
+      action: 'UPDATE',
+      relatedTable: 'AnnualLeaveEntitlement',
+      relatedId: updatedEntitlement.id,
+      detail: `Updated entitlement ID ${id}. Set entitled to ${entitledDays}, used to ${usedDays}.`,
+      userId: req.user.id
+    });
     res.status(200).json({
       message: "อัปเดตโควต้าวันลาสำเร็จ",
       data: updatedEntitlement,
     });
   },
-};
+  createEntitlement: async (req, res, next) => {
+
+    const {  year, leaveType, entitledDays } = req.body;
+    const userId = parseInt(req.body.userId)
+    const newEntitlement = await annualLeaveService.createEntitlement({
+      userId,
+      year,
+      leaveType,
+      entitledDays,
+    });
+    await auditService.createAuditLog({
+      action: 'CREATE',
+      relatedTable: 'AnnualLeaveEntitlement',
+      relatedId: newEntitlement.id,
+      detail: `Created entitlement for user ${userId} (${leaveType}, ${year}) with ${entitledDays} days.`,
+      userId: req.user.id,
+     
+    });
+    res.status(201).json({
+      message: "สร้างโควต้าวันลาสำเร็จ",
+      data: newEntitlement,
+    });
+  },
+}
 export default annualLeaveController;

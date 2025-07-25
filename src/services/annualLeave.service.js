@@ -43,7 +43,7 @@ const annualLeaveService = {
     }, getAllEntitlements: async () => {
         return prisma.annualLeaveEntitlement.findMany({
             include: {
-                user: { 
+                User: { 
                     select: {
                         id: true,
                         name: true,
@@ -72,6 +72,19 @@ const annualLeaveService = {
                 entitledDays: data.entitledDays,
                 usedDays: data.usedDays,
                 remainingDays: remainingDays, 
+            },
+        });
+    },
+      createEntitlement: async (data) => {
+        const remainingDays = data.entitledDays;
+        return prisma.annualLeaveEntitlement.create({
+            data: {
+                userId: data.userId,
+                year: data.year,
+                leaveType: data.leaveType,
+                entitledDays: data.entitledDays,
+                remainingDays: remainingDays,
+                updatedAt:data.updatedAt
             },
         });
     },
