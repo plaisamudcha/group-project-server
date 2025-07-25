@@ -5,50 +5,55 @@ import dayjs from "dayjs";
 
 const attendanceService = {
   async clockIn(id) {
-    const today = dayjs().startOf("day").toDate();
-    const tomorrow = dayjs().endOf("day").toDate();
-
+    const userId = Number(id);
+    const today = dayjs().format("YYYY-MM-DD");
     const existing = await prisma.attendance.findFirst({
       where: {
-        userId: id,
-        date: {
-          gte: today, //gte: today (greater than or equal): วันที่ มากกว่าหรือเท่ากับ เวลา 00:00 ของวันนี้
-          lt: tomorrow, //lt: tomorrow (less than): วันที่ น้อยกว่า เวลา 00:00 ของวันถัดไป
-        },
-      },
+        userId: userId,
+        date: today,
+      }
     });
     if (existing && existing.clockIn) {
-      createError(400, "วันนี้คุณลงเวลาเข้างานไปแล้ว");
+      createError(400, "วันนี้มีการ clock-in แล้ว");
     }
 
+
+
     const profile = await prisma.employeeProfile.findFirst({
-      where: { userId: id },
+      where: { userId },
       include: {
         workPolicy: true,
         shift: true,
       },
     });
 
-    console.log("profile", profile);
     if (!profile) {
       createError(400, "ไม่พบข้อมูลพนักงาน");
     }
 
-    const now = dayjs().toDate();
-    const isLate = now > profile.workPolicy.startTime;
-    const lateMinutes = isLate
-      ? Math.floor((now - profile.workPolicy.startTime) / 1000 / 60)
-      : 0;
+    const now = dayjs();
+    const startTimeStr = profile.shift
+      ? profile.shift.inTime
+      : profile.workPolicy.startTime;
 
+    const startTimeObj = dayjs(`${today} ${startTimeStr}`, "YYYY-MM-DD HH:mm");
+
+    // const startTimeObj = dayjs(`${today} ${profile.workPolicy.startTime}`, "YYYY-MM-DD HH:mm"); // "2025-07-25 09:00"
+
+    const isLate = now.isAfter(startTimeObj);
+    const lateMinutes = Math.max(0, now.diff(startTimeObj, "minute"));
+    // console.log('clockIn:', now.format("YYYY-MM-DD HH:mm"));
+    // console.log('shiftStart:', startTimeObj.format("YYYY-MM-DD HH:mm"));
+    // console.log('lateMinutes:', lateMinutes);
     const attendance = await prisma.attendance.create({
       data: {
-        userId: id,
+        userId,
         date: today,
-        clockIn: now,
+        clockIn: now.format("HH:mm"),
         isLate,
         lateMinutes,
         workPolicyId: profile.workPolicyId,
-        shiftId: profile.shiftId || null,
+        shiftId: profile?.shiftId || null,
       },
     });
 
@@ -57,67 +62,101 @@ const attendanceService = {
 
   async clockOut(userId) {
     // 1. หาวันนี้ว่ามี clock-in หรือยัง
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
+    const today = dayjs().format("YYYY-MM-DD");
+    const now = dayjs();
+    const nowString = now.format("HH:mm");               // "15:40"
 
-    // หา record ที่ยังไม่มี clockOut
+
+    // ถ้าไม่มี clock-in ให้แจ้งว่าไม่สามารถ clock-out ได้
     const attendance = await prisma.attendance.findFirst({
       where: {
-        userId: id,
-        date: {
-          gte: today,
-          lt: tomorrow,
+        userId: Number(userId),
+        date: today,
+        clockIn: {
+          not: null, // ต้องมีการ clock-in ก่อน
         },
-        clockOut: null,
       },
     });
-
     if (!attendance) {
-      throw createError(400, "ยังไม่ได้ clock-in หรือ clock-out ไปแล้ว");
+      createError(400, "ยังไม่มีการ clock-in วันนี้ หรือ clock-out ไปแล้ว");
     }
 
-    const now = new Date();
 
     // คำนวณชั่วโมงทำงาน
-    const totalHours = (now - attendance.clockIn) / 1000 / 60 / 60;
+
+    const dateString = attendance.date;     // "2025-07-25"
+    const clockInString = attendance.clockIn; // "09:00"
+
+    const clockInTime = dayjs(`${dateString} ${clockInString}`, "YYYY-MM-DD HH:mm");
+    // ตอน clock-out ให้สร้าง now เช่น
+
+
+    const totalHours = parseFloat(now.diff(clockInTime, "hour", true).toFixed(2)); // ชั่วโมงที่ทำงาน เช่น 8.50
+    // นำ workPolicyId และ shiftId มาจาก attendance เพื่อคำนวนหา overtime
+    const profile = await prisma.employeeProfile.findFirst({
+      where: { userId: Number(userId) },
+      include: {
+        workPolicy: true,
+        shift: true,
+      },
+
+    });
+
+    if (!profile) {
+      createError(400, "ไม่พบข้อมูลพนักงาน");
+    }
+
+
+    let policyStart, policyEnd;
+    if (profile.shift) {
+      policyStart = dayjs(`${today} ${profile.shift.inTime}`, "YYYY-MM-DD HH:mm");
+      policyEnd = dayjs(`${today} ${profile.shift.outTime}`, "YYYY-MM-DD HH:mm");
+    } else {
+      policyStart = dayjs(`${today} ${profile.workPolicy.startTime}`, "YYYY-MM-DD HH:mm");
+      policyEnd = dayjs(`${today} ${profile.workPolicy.endTime}`, "YYYY-MM-DD HH:mm");
+    }
+
+    const totalTimePolicy = policyEnd.diff(policyStart, "hour", true);
+
+    const overtimeHours = totalHours - totalTimePolicy; // ชั่วโมง OT ถ้าเป็นลบลบจะเป็นค่าลบ
+    const overtime = overtimeHours > 0 ? overtimeHours : 0; // ถ้า overtime เป็นลบ ให้เป็น 0
+
+
 
     // Update attendance
     const updated = await prisma.attendance.update({
       where: { id: attendance.id },
       data: {
-        clockOut: now,
+        clockOut: now.format("HH:mm"),
         totalHours,
         status: "COMPLETED",
+        overtimeHours: overtime,
+        isAbsent: false, // ถ้า clock-out สำเร็จ แสดงว่าไม่ขาดงาน
       },
+
     });
 
     return updated;
   },
-
   async getAttendanceList(userId) {
     const attendances = await prisma.attendance.findMany({
       where: { userId },
-      orderBy: { date: "desc" },
+      orderBy: { date: 'desc' },
     });
     return attendances;
   },
   async getReports(userId) {
-    // เริ่มต้นด้วย รายงานเฉพาะเดือนปัจจุบัน
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth(); // เดือนที่ 0 = มกราคม
-
-    const firstDay = new Date(year, month, 1); // วันที่ 1 ของเดือนนี้
-    const lastDay = new Date(year, month + 1, 1); // วันที่ 1 ของ "เดือนถัดไป"
+    // กำหนดช่วงเดือนปัจจุบันด้วย dayjs
+    const now = dayjs();
+    const firstDay = now.startOf("month").format("YYYY-MM-DD"); // เช่น "2025-07-01"
+    const lastDay = now.endOf("month").format("YYYY-MM-DD");   // เช่น "2025-07-31"
 
     const attendances = await prisma.attendance.findMany({
       where: {
         userId,
         date: {
-          gte: firstDay, // >= วันที่ 1 เดือนนี้ เวลา 00:00:00
-          lt: lastDay, // < วันที่ 1 เดือนถัดไป เวลา 00:00:00
+          gte: firstDay, // >= "2025-07-01"
+          lte: lastDay,  // <= "2025-07-31"
         },
       },
     });
@@ -138,14 +177,14 @@ const attendanceService = {
     );
 
     return {
-      totalDays, // รวมวันทั้งหมดที่มี record
-      presentDays, // วันมาทำงานจริง
-      lateDays, // จำนวนวันที่มาสาย
-      totalHours, // ชั่วโมงรวมที่ทำงาน
-      totalOT, // ชั่วโมง OT รวม
-      attendances, // ข้อมูลดิบส่งกลับไปด้วยไว้ใช้ front-end
+      totalDays,
+      presentDays,
+      lateDays,
+      totalHours,
+      totalOT,
+      attendances,
     };
-  },
+  }
 };
 
 export default attendanceService;

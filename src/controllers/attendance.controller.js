@@ -3,7 +3,6 @@ const attendanceController = {
   // ---- Clock In ----
   clockIn: async (req, res) => {
     const userId = req.user.id;
-    // console.log('Log userId', userId)
     const attendance = await attendanceService.clockIn(userId);
 
     if (!attendance) {
@@ -27,7 +26,7 @@ const attendanceController = {
 
   // ---- Get Attendance List ----
   getAttendanceList: async (req, res) => {
-    const userId = req.user.id; // หรือ req.user.userId แล้วแต่ payload JWT
+    const userId = req.user.id;
     const attendances = await attendanceService.getAttendanceList(userId);
     res.json({ attendances });
   },
