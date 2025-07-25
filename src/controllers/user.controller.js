@@ -13,7 +13,14 @@ const userController = {
   // GET
   getUserById: async (req, res) => {
     const { id } = req.params;
-    const user = await userService.getUserById(id);
+    const userIdAsInt = parseInt(id, 10); // แปลง id จาก String เป็น Int
+    // --- 👆👆👆 สิ้นสุดส่วนแก้ไข 👆👆👆 ---
+
+    // ตรวจสอบว่าการแปลงค่าสำเร็จหรือไม่
+    if (isNaN(userIdAsInt)) {
+        createError(400, "User ID ต้องเป็นตัวเลขเท่านั้น");
+    }
+    const user = await userService.getUserById(userIdAsInt);
     if (!user) {
       createError(400, "ไม่พบผู้ใช้ที่ระบุ");
     }
@@ -29,7 +36,7 @@ const userController = {
       createError(400, "อีเมลนี้ถูกใช้ไปแล้ว");
     }
 
-    const newUser = await prisma.$transaction(async (tx) => {
+    const newUserWithPassword = await prisma.$transaction(async (tx) => {
         // 1. สร้าง User และ Profile ภายใน Transaction
         const createdUser = await userService.createUser(userData, profileData, tx);
 
@@ -44,23 +51,31 @@ const userController = {
         await auditService.createAuditLog(data, tx);
 
         return createdUser; // คืนค่าผู้ใช้ที่สร้างเสร็จแล้ว
-    });
-    // --- 👆👆👆 สิ้นสุดส่วนของ Transaction 👆👆👆 ---
+      });
 
-    res.status(201).json({ // แนะนำให้ใช้ 201 Created
-      message: "สร้างผู้ใช้สำเร็จ",
+       const { password: hashedPassword, ...newUser } = newUserWithPassword;
+      
+      // --- 👆👆👆 สิ้นสุดส่วนของ Transaction 👆👆👆 ---
+      
+      res.status(201).json({ // แนะนำให้ใช้ 201 Created
+        message: "สร้างผู้ใช้สำเร็จ",
       user: newUser
     });
 },
   // PUT
   updateUser: async (req, res) => {
     const { id } = req.params;
-    const existingUser = await userService.getUserById(id);
+    const userIdAsInt = parseInt(id, 10);
+
+    if (isNaN(userIdAsInt)) {
+      return createError(400, "User ID ต้องเป็นตัวเลขเท่านั้น");
+    }
+    const existingUser = await userService.getUserById(userIdAsInt);
     if (!existingUser) {
-      createError(400, "ไม่พบผู้ใช้ที่ระบุ");
+      return createError(404, "ไม่พบผู้ใช้ที่ระบุ");
     }
     const result = await prisma.$transaction(async (tx) => {
-      const newUser = await userService.updateUser(id, req.body, tx);
+      const newUser = await userService.updateUser(userIdAsInt, req.body, tx);
       const data = {
         action: "UPDATE",
         relatedTable: "User",

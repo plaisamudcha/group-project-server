@@ -1,11 +1,17 @@
-import { text } from "express";
 import profileService from "../services/profile.service.js";
 import createError from "../utils/create-error.util.js";
+import prisma from "../config/prisma.js";
+import auditService from "../services/audit-log.service.js";
 
 const profileController = {
   getProfileByUserId: async (req, res) => {
     const { userId } = req.params;
-    const profile = await profileService.getProfileByUserId(userId);
+    const userIdAsInt = parseInt(userId, 10); // ,10 คือเลขฐาน 10
+
+    if (isNaN(userIdAsInt)) {
+      createError(400, "User ID ต้องเป็นตัวเลขเท่านั้น");
+    }
+    const profile = await profileService.getProfileByUserId(userIdAsInt);
     if (!profile) {
       createError(400, "ไม่พบโปรไฟล์ที่ระบุ");
     }
@@ -14,11 +20,16 @@ const profileController = {
 
   updateProfileByUserId: async (req, res) => {
     const { userId } = req.params;
+    const userIdAsInt = parseInt(userId, 10);
+
+    if (isNaN(userIdAsInt)) {
+      createError(400, "User ID ต้องเป็นตัวเลขเท่านั้น");
+    }
 
     const updatedProfile = await prisma.$transaction(async (tx) => {
       // 1. อัปเดตโปรไฟล์
       const profile = await profileService.updateProfileByUserId(
-        userId,
+        userIdAsInt,
         req.body,
         tx // <--- ส่ง tx เข้าไป
       );

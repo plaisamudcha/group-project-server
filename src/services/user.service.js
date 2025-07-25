@@ -2,9 +2,9 @@ import prisma from "../config/prisma.js";
 import bcrypt from "bcryptjs";
 
 const userService = {
-  getAllUsers: () => {
-    return prisma.user.findMany({
-      omit: { password: true },
+   getAllUsers: async () => {
+    const users = await prisma.user.findMany({
+      // 1. ใช้ include ดึงข้อมูลที่เกี่ยวข้องทั้งหมดตามปกติ  แก้ไขเพราะ ใช้ include กับ omit ไม่ได้
       include: {
         employeeProfile: {
           include: {
@@ -14,10 +14,16 @@ const userService = {
         },
       },
     });
+
+    // 2. ใช้ JavaScript เพื่อลบรหัสผ่านออกจากทุก object ก่อนส่งกลับ
+    return users.map(user => {
+      const { password, ...userWithoutPassword } = user;
+      return userWithoutPassword;
+    });
   },
 
-  getUserById: (userId) => {
-    return prisma.user.findUnique({
+  getUserById: async (userId) => {
+    const user = await prisma.user.findUnique({
       where: {
         id: userId,
       },
@@ -30,7 +36,15 @@ const userService = {
         },
       },
     });
+
+    // 3. ถ้าเจอ user ให้ลบรหัสผ่านออกก่อนส่งกลับ
+    if (user) {
+      const { password, ...userWithoutPassword } = user;
+      return userWithoutPassword;
+    }
+    return null;
   },
+
 
   createUser: async (userData, profileData, tx = prisma) => {
     const hashpassword = await bcrypt.hash(userData.password, 12);
