@@ -143,6 +143,7 @@ model AnnualLeaveEntitlement {
   user          User                             @relation(fields: [userId], references: [id])
 
   @@index([userId], map: "AnnualLeaveEntitlement_userId_fkey")
+  @@unique([userId, year, leaveType])
 }
 
 enum EmploymentType {
