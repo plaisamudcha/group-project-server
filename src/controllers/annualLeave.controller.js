@@ -18,6 +18,8 @@ const annualLeaveController = {
   updateEntitlement: async (req, res, next) => {
     const { id } = req.params;
     const { entitledDays, usedDays } = req.body;
+
+    
     const updatedEntitlement = await annualLeaveService.updateEntitlement(
       parseInt(id),
       {
