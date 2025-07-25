@@ -3,8 +3,8 @@ import shiftService from "../services/shift.service.js";
 
 const shiftController = {
   getAllshift: async (req, res) => {
-    const shifts = await shiftService.getAllShifts();
-    res.json({ shifts });
+    const result = await shiftService.getAllShifts();
+    res.json({ result });
   },
   createShift: async (req, res) => {
     const { name, inTime, outTime } = req.body;
@@ -19,7 +19,7 @@ const shiftController = {
       );
       await auditLogService.createAuditLog(
         {
-          action: "create",
+          action: "CREATE",
           entity: "shift",
           entityId: newShift.id,
           userId: req.user.id,
@@ -33,8 +33,24 @@ const shiftController = {
   updateShift: async (req, res) => {
     const { id } = req.params;
     const { name, inTime, outTime } = req.body;
-    await shiftService.updateShift(id, name, inTime, outTime);
-    res.json({ message: "แก้ไขข้อมูลสำเร็จ" });
+    const result = await prisma.$transaction(async (tx) => {
+      const updatedShift = await shiftService.updateShift(
+        Number(id),
+        { name, inTime, outTime },
+        tx
+      );
+      await auditLogService.createAuditLog(
+        {
+          action: "UPDATE",
+          entity: "shift",
+          entityId: updatedShift.id,
+          userId: req.user.id,
+        },
+        tx
+      );
+      return updatedShift;
+    });
+    res.json({ message: "แก้ไขข้อมูลสำเร็จ", result });
   },
 };
 
