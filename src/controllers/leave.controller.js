@@ -4,6 +4,7 @@ import holidayService from "../services/holiday.service.js";
 import leaveService from "../services/leave.service.js";
 import createError from "../utils/create-error.util.js";
 import calculateLeaveDays from "../utils/calculateLeaveDays.js"
+import dayjs from "dayjs";
 const leaveController = {
     getAllLeaves: async (req, res) => {
         const leavedata = await leaveService.GetAllLeave()
@@ -30,10 +31,8 @@ const leaveController = {
     createLeavesRequests: async (req, res) => {
         const userId = req.user.id
         const { startDate, endDate, leaveType, reason } = req.body
-        const newStartDate = new Date(startDate);
-        const newEndDate = new Date(endDate);
-        const holidayFound = await holidayService.checkIfOnHoliday(newStartDate, endDate)
-        const totalLeaveDays = calculateLeaveDays(newStartDate, newEndDate);
+        const holidayFound = await holidayService.checkIfOnHoliday(startDate, endDate)
+        const totalLeaveDays = calculateLeaveDays(startDate, endDate);
         console.log("first")
         if (totalLeaveDays <= 0) {
                console.log("second")
@@ -45,9 +44,9 @@ const leaveController = {
                 message: "ไม่สามารถสร้างว้นลาตรงกับวันหยุดพิเศษได้"
             });
         }
-        const leaveYear = newStartDate.getFullYear();
+        const leaveYear = dayjs(startDate).year();
         const entitlement = await annualLeaveService.checkBalance(userId, totalLeaveDays, leaveType, leaveYear);
-        const overlappingLeave = await leaveService.checkOverLaptime(userId, newStartDate, newEndDate)
+        const overlappingLeave = await leaveService.checkOverLaptime(userId, startDate, endDate)
         if (overlappingLeave) {
             return res.status(409).json({
                 message: "คุณส่งคำขอวันลาซ้ำ",
@@ -60,8 +59,8 @@ const leaveController = {
         }
         const result = await prisma.$transaction(async (tx) => {
                 const newLeaveRequest = await leaveService.createLeaveRequest({
-                    startDate: newStartDate,
-                    endDate: newEndDate,
+                    startDate: startDate,
+                    endDate: endDate,
                     leaveDays: totalLeaveDays,
                     leaveType,
                     reason,
@@ -103,7 +102,7 @@ const leaveController = {
                     await annualLeaveService.refundBalance( 
                         leaveRequest.userId,
                         leaveRequest.leaveType,
-                        leaveRequest.startDate.getFullYear(),
+                        dayjs(leaveRequest.startDate).year(),
                         leaveRequest.leaveDays,
                         tx
                     );
