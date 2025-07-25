@@ -100,10 +100,10 @@ model LeaveRequest {
 }
 
 model LeaveAdjustment {
-  id               Int          @id @default(autoincrement())
+  id               Int                            @id @default(autoincrement())
   leaveRequestId   Int
   deductionMinutes Int
-  adjustmentType   StatusType
+  adjustmentType   LeaveAdjustment_adjustmentType
   attendanceId     Int
   attendance       Attendance   @relation(fields: [attendanceId], references: [id])
   leaveRequest     LeaveRequest @relation(fields: [leaveRequestId], references: [id])
@@ -135,7 +135,7 @@ model AnnualLeaveEntitlement {
   id            Int       @id @default(autoincrement())
   userId        Int
   year          Int
-  leaveType     LeaveType
+  leaveType     AnnualLeaveEntitlement_leaveType
   entitledDays  Float
   usedDays      Float     @default(0)
   remainingDays Float
@@ -183,4 +183,20 @@ enum LogAction {
   DELETE
   APPROVE
   REJECT
+}
+
+enum AnnualLeaveEntitlement_leaveType {
+  SICK
+  PERSONAL
+  VACATION
+  UNPAID
+  MATERNITY
+}
+
+enum LeaveAdjustment_adjustmentType {
+  PENDING
+  ABSENT
+  ON_LEAVE
+  COMPLETED
+  INCOMPLETED
 }

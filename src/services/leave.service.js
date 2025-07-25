@@ -29,7 +29,7 @@ const leaveService = {
         return prisma.leaveRequest.findUnique(
             {
                 where: {
-                    leaveid: leaveid
+                    id: leaveid
                 },
                 include: {
                     adjustments: true

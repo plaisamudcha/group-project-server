@@ -8,7 +8,7 @@ const holidayService = {
         return await prisma.holiday.create({ data })
     },
     checkIfOnHoliday: async (newStartDate,newEndDate) => {
-        return await prisma.holiday.findfirst({
+        return await prisma.holiday.findFirst({
             where: {
                 date: {
                     gte: newStartDate, 
