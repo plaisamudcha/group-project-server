@@ -1,3 +1,4 @@
+import prisma from "../config/prisma.js";
 import auditService from "../services/audit-log.service.js";
 import authService from "../services/auth.service.js";
 import userService from "../services/user.service.js";
@@ -28,20 +29,29 @@ const userController = {
       createError(400, "อีเมลนี้ถูกใช้ไปแล้ว");
     }
 
-    const newUser = await userService.createUser(userData, profileData);
-    const data = {
-      action: "CREATE",
-      relatedTable: "User",
-      relatedId: newUser.id,
-      detail: "สร้างผู้ใช้ใหม่",
-      userId: req.user.id, // Assuming req.user contains the authenticated user's info
-    };
-    await auditService.createAuditLog(data);
+    const newUser = await prisma.$transaction(async (tx) => {
+        // 1. สร้าง User และ Profile ภายใน Transaction
+        const createdUser = await userService.createUser(userData, profileData, tx);
 
-    res.status(200).json({
-      message: "สร้างผู้ใช้สำเร็จ",
+        // 2. สร้าง Audit Log ภายใน Transaction เดียวกัน
+        const data = {
+            action: "CREATE",
+            relatedTable: "User",
+            relatedId: createdUser.id,
+            detail: `สร้างผู้ใช้ใหม่: ${createdUser.email}`,
+            userId: req.user.id,
+        };
+        await auditService.createAuditLog(data, tx);
+
+        return createdUser; // คืนค่าผู้ใช้ที่สร้างเสร็จแล้ว
     });
-  },
+    // --- 👆👆👆 สิ้นสุดส่วนของ Transaction 👆👆👆 ---
+
+    res.status(201).json({ // แนะนำให้ใช้ 201 Created
+      message: "สร้างผู้ใช้สำเร็จ",
+      user: newUser
+    });
+},
   // PUT
   updateUser: async (req, res) => {
     const { id } = req.params;
@@ -49,15 +59,19 @@ const userController = {
     if (!existingUser) {
       createError(400, "ไม่พบผู้ใช้ที่ระบุ");
     }
-    const newUser = await userService.updateUser(id, req.body);
-    const data = {
-      action: "UPDATE",
-      relatedTable: "User",
-      relatedId: newUser.id,
-      detail: "อัปเดตผู้ใช้",
-      userId: req.user.id, // Assuming req.user contains the authenticated user's info
-    };
-    await auditService.createAuditLog(data);
+    const result = await prisma.$transaction(async (tx) => {
+      const newUser = await userService.updateUser(id, req.body, tx);
+      const data = {
+        action: "UPDATE",
+        relatedTable: "User",
+        relatedId: newUser.id,
+        detail: "อัปเดตผู้ใช้",
+        userId: req.user.id, // Assuming req.user contains the authenticated user's info
+      };
+      await auditService.createAuditLog(data, tx);
+      return newUser;
+    });
+
     res.status(200).json({
       message: "อัปเดตผู้ใช้สำเร็จ",
     });
