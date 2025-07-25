@@ -32,9 +32,9 @@ const userService = {
     });
   },
 
-  createUser: async (userData, profileData) => {
+  createUser: async (userData, profileData, tx = prisma) => {
     const hashpassword = await bcrypt.hash(userData.password, 12);
-    return prisma.user.create({
+    return tx.user.create({
       data: {
         name: userData.name,
         email: userData.email,
@@ -52,8 +52,8 @@ const userService = {
     });
   },
 
-  updateUser: (userId, updataData) => {
-    return prisma.user.update({
+  updateUser: (userId, updataData, tx = prisma) => {
+    return tx.user.update({
       where: {
         id: userId,
       },
