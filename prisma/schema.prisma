@@ -114,7 +114,7 @@ model LeaveAdjustment {
 
 model Holiday {
   id   Int      @id @default(autoincrement())
-  date DateTime
+  date String
   name String
 }
 
