@@ -1,16 +1,16 @@
 import prisma from "../config/prisma.js";
 
 const profileService = {
-  getProfileByUserId: (userId) => {
-    return prisma.employeeProfile.findUnique({
+  getProfileByUserId: (userId, tx = prisma) => {
+    return tx.employeeProfile.findUnique({
       where: {
         userId: userId,
       },
     });
   },
 
-  updateProfileByUserId: (userId, profileData) => {
-    return prisma.employeeProfile.update({
+  updateProfileByUserId: (userId, profileData, tx = prisma) => {
+    return tx.employeeProfile.update({
       where: {
         userId: userId,
       },
