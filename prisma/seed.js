@@ -71,6 +71,11 @@ async function main() {
   console.log("✅ Done seeding!");
 }
 
+// function test (){
+//   console.log("seed here")
+// }
+
+//  test ()
 main()
   .catch((e) => {
     console.error(e);

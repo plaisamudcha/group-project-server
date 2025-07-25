@@ -105,8 +105,8 @@ model LeaveAdjustment {
   deductionMinutes Int
   adjustmentType   LeaveAdjustment_adjustmentType
   attendanceId     Int
-  attendance       Attendance                     @relation(fields: [attendanceId], references: [id])
-  leaveRequest     LeaveRequest                   @relation(fields: [leaveRequestId], references: [id])
+  attendance       Attendance   @relation(fields: [attendanceId], references: [id])
+  leaveRequest     LeaveRequest @relation(fields: [leaveRequestId], references: [id])
 
   @@index([attendanceId], map: "LeaveAdjustment_attendanceId_fkey")
   @@index([leaveRequestId], map: "LeaveAdjustment_leaveRequestId_fkey")
@@ -137,10 +137,10 @@ model AnnualLeaveEntitlement {
   year          Int
   leaveType     AnnualLeaveEntitlement_leaveType
   entitledDays  Float
-  usedDays      Float                            @default(0)
-  remainingDays Float                            @default(0)
-  updatedAt     DateTime
-  User          User                             @relation(fields: [userId], references: [id])
+  usedDays      Float     @default(0)
+  remainingDays Float
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id])
 
   @@index([userId], map: "AnnualLeaveEntitlement_userId_fkey")
 }
