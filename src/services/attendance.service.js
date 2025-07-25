@@ -1,14 +1,13 @@
 
 import prisma from "../config/prisma.js";
 import createError from "../utils/create-error.util.js";
+import dayjs from "dayjs";
+
 
 const attendanceService = {
   async clockIn(id) {
-    // console.log(' Log id',  id)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); //set ให้เวลาเป็น0:0:0:0ใช้เปรียบเทียบข้อมูลในวันเดียวกัน
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1); //24ชั้วโมงของ today+1 เป็น25:00 ก็คือเป็นค่าของวันพรุ่งนี้ 00:00
+    const today = dayjs().startOf("day").toDate();
+    const tomorrow = dayjs().endOf("day").toDate();
 
 
     const existing = await prisma.attendance.findFirst({
@@ -38,7 +37,7 @@ const attendanceService = {
       createError(400, "ไม่พบข้อมูลพนักงาน");
     }
 
-    const now = new Date();
+    const now = dayjs().toDate();
     const isLate = now > profile.workPolicy.startTime;
     const lateMinutes = isLate
       ? Math.floor((now - profile.workPolicy.startTime) / 1000 / 60)
