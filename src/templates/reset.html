@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Password reset</title>
+    <style>
+      .container {
+        max-width: 600px;
+        margin: auto;
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 30px;
+        font-family: Arial, sans-serif;
+        color: #333333;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .button {
+        display: inline-block;
+        background-color: #007bff;
+        color: white;
+        padding: 14px 28px;
+        text-decoration: none;
+        border-radius: 6px;
+        margin-top: 20px;
+      }
+
+      .footer {
+        font-size: 12px;
+        text-align: center;
+        color: #888888;
+        margin-top: 40px;
+      }
+    </style>
+  </head>
+  <body style="background: #f4f4f4; padding: 40px">
+    <div class="container">
+      <div class="header">
+        <h2>Reset Your Password</h2>
+        <p>You have requested to reset your password</p>
+      </div>
+
+      <p>Hello,</p>
+      <p>
+        We received a request to reset your password. Click the button below to
+        reset it. If you did not make this request, please ignore this email.
+      </p>
+
+      <a href="{{RESET_LINK}}" class="button">Reset Password</a>
+
+      <p style="margin-top: 20px">
+        This link will expire in 30 minutes for your security.
+      </p>
+
+      <div class="footer">
+        <p>&copy; 2025 Your Company Name. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+</html>
