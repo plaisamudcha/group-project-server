@@ -28,7 +28,7 @@ const authController = {
       role: foundUser.role,
     };
 
-    const assessToken = genTokenJWT.loginToken(payload);
+    const accessToken = genTokenJWT.loginToken(payload);
     const refreshToken = genTokenJWT.refreshToken(payload);
     await prisma.refreshToken.create({
       data: {
@@ -43,7 +43,7 @@ const authController = {
       sameSite: "Strict",
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
-    res.json({ message: "เข้าสู่ระบบสำเร็จ", assessToken, user: foundUser });
+    res.json({ message: "เข้าสู่ระบบสำเร็จ", accessToken, user: foundUser });
   },
   forgotPassword: async (req, res) => {
     const { email } = req.body;
