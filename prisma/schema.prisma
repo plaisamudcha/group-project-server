@@ -19,6 +19,7 @@ model User {
   auditLogs               AuditLog[]
   employeeProfile         EmployeeProfile?
   leaveRequests           LeaveRequest[]
+  refreshToken            refreshToken[]
 }
 
 model EmployeeProfile {
@@ -113,7 +114,7 @@ model LeaveAdjustment {
 }
 
 model Holiday {
-  id   Int      @id @default(autoincrement())
+  id   Int    @id @default(autoincrement())
   date String
   name String
 }
@@ -142,8 +143,20 @@ model AnnualLeaveEntitlement {
   updatedAt     DateTime                         @updatedAt
   user          User                             @relation(fields: [userId], references: [id])
 
-  @@index([userId], map: "AnnualLeaveEntitlement_userId_fkey")
   @@unique([userId, year, leaveType])
+  @@index([userId], map: "AnnualLeaveEntitlement_userId_fkey")
+}
+
+model refreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "refreshToken_userId_fkey")
 }
 
 enum EmploymentType {
