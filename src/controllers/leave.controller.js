@@ -35,11 +35,11 @@ const leaveController = {
         const totalLeaveDays = calculateLeaveDays(startDate, endDate);
         console.log("first")
         if (totalLeaveDays <= 0) {
-               console.log("second")
+            console.log("second")
             return res.status(400).json({ message: "จำนวนวันลาที่คำนวณได้ต้องมากกว่า 0" });
         }
         if (holidayFound) {
-               console.log("3")
+            console.log("3")
             return res.status(400).json({
                 message: "ไม่สามารถสร้างว้นลาตรงกับวันหยุดพิเศษได้"
             });
@@ -58,85 +58,86 @@ const leaveController = {
             });
         }
         const result = await prisma.$transaction(async (tx) => {
-                const newLeaveRequest = await leaveService.createLeaveRequest({
-                    startDate: startDate,
-                    endDate: endDate,
-                    leaveDays: totalLeaveDays,
-                    leaveType,
-                    reason,
-                    userId
-                }, tx);
+            const newLeaveRequest = await leaveService.createLeaveRequest({
+                startDate: startDate,
+                endDate: endDate,
+                leaveDays: totalLeaveDays,
+                leaveType,
+                reason,
+                userId
+            }, tx);
 
-                await annualLeaveService.deductFromBalance(entitlement.id, totalLeaveDays, tx);
+            await annualLeaveService.deductFromBalance(entitlement.id, totalLeaveDays, tx);
 
-                return newLeaveRequest;
-            });
+            return newLeaveRequest;
+        });
 
-            res.status(201).json({
-                message: "สร้างใบลาสำเร็จ",
-                data: result,
-            });
+        res.status(201).json({
+            message: "สร้างใบลาสำเร็จ",
+            data: result,
+        });
 
     },
-     updateLeaveStatus: async (req, res, next) =>  {
-            
-            const leaveRequestId = Number(req.params.id)
-            const { status } = req.body;
-            const userPerformingAction = req.user.id
-        
-            const leaveRequest = await leaveService.getLeaveDetails(Number(leaveRequestId)); 
-            if (!leaveRequest) {
-                return res.status(400).json({ message: "ไม่พบใบคำขอลานี้" });
-            }
+    updateLeaveStatus: async (req, res, next) => {
 
-            if (leaveRequest.status !== 'PENDING') {
-                return res.status(400).json({ message: `ใบคำขอนี้ถูก ${leaveRequest.status.toLowerCase()} ไปแล้ว` });
-            }
-
-    
-            if (status === 'REJECTED') {
-            
-                await prisma.$transaction(async (tx) => {
-                
-                    await leaveService.updateStatus(leaveRequestId, 'REJECTED', tx); // ใช้ Service
-                    await annualLeaveService.refundBalance( 
-                        leaveRequest.userId,
-                        leaveRequest.leaveType,
-                        dayjs(leaveRequest.startDate).year(),
-                        leaveRequest.leaveDays,
-                        tx
-                    );
-                });
-                await tx.auditLog.create({
-                        data: {
-                            action: 'REJECT',
-                            relatedTable: 'LeaveRequest',
-                            relatedId: leaveRequestId,
-                            detail: `Leave request rejected by user ID: ${userPerformingAction.id}`,
-                            userId: userPerformingAction.id
-                        }
-                    });
-               return res.status(200).json({ message: "ปฏิเสธใบคำขอลา และทำการคืนโควต้าวันลาเรียบร้อยแล้ว" });
-
-            }  else { 
-                const updatedLeaveRequest = await prisma.$transaction(async (tx) => {
-                    const leave = await leaveService.updateStatus(leaveRequestId, 'APPROVED', tx);
-                    await tx.auditLog.create({
-                        data: {
-                            action: 'APPROVE',
-                            relatedTable: 'LeaveRequest',
-                            relatedId: leaveRequestId,
-                            detail: `Leave request approved by user ID: ${userPerformingAction.id}`,
-                            userId: userPerformingAction.id
-                        }
-                    });
-                    return leave;
-                });
-                
-                return res.status(200).json({ message: "อนุมัติใบคำขอลาเรียบร้อยแล้ว", data: updatedLeaveRequest });
-            }
-
+        const leaveRequestId = Number(req.params.id)
+        const { status } = req.body;
+        const userPerformingAction = req.user.id
+        console.log(userPerformingAction)
+        const leaveRequest = await leaveService.getLeaveDetails(Number(leaveRequestId));
+        if (!leaveRequest) {
+            return res.status(400).json({ message: "ไม่พบใบคำขอลานี้" });
         }
+
+        if (leaveRequest.status !== 'PENDING') {
+            return res.status(400).json({ message: `ใบคำขอนี้ถูก ${leaveRequest.status.toLowerCase()} ไปแล้ว` });
+        }
+
+
+        if (status === 'REJECTED') {
+
+            await prisma.$transaction(async (tx) => {
+
+                await leaveService.updateStatus(leaveRequestId, 'REJECTED', tx); // ใช้ Service
+                await annualLeaveService.refundBalance(
+                    leaveRequest.userId,
+                    leaveRequest.leaveType,
+                    dayjs(leaveRequest.startDate).year(),
+                    leaveRequest.leaveDays,
+                    tx
+                );
+
+                await tx.auditLog.create({
+                    data: {
+                        action: 'REJECT',
+                        relatedTable: 'LeaveRequest',
+                        relatedId: leaveRequestId,
+                        detail: `Leave request rejected by user ID: ${userPerformingAction}`,
+                        userId: userPerformingAction
+                    }
+                });
+            });
+            return res.status(200).json({ message: "ปฏิเสธใบคำขอลา และทำการคืนโควต้าวันลาเรียบร้อยแล้ว" });
+
+        } else {
+            const updatedLeaveRequest = await prisma.$transaction(async (tx) => {
+                const leave = await leaveService.updateStatus(leaveRequestId, 'APPROVED', tx);
+                await tx.auditLog.create({
+                    data: {
+                        action: 'APPROVE',
+                        relatedTable: 'LeaveRequest',
+                        relatedId: leaveRequestId,
+                        detail: `Leave request approved by user ID: ${userPerformingAction}`,
+                        userId: userPerformingAction
+                    }
+                });
+                return leave;
+            });
+
+            return res.status(200).json({ message: "อนุมัติใบคำขอลาเรียบร้อยแล้ว", data: updatedLeaveRequest });
+        }
+
+    }
 };
 
 export default leaveController;
