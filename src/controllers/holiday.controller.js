@@ -28,7 +28,7 @@ const holidayController = {
             res.status(200).json({ message: 'ไม่พบข้อมูล' })
         }
 
-        res.status(200).json({ message: 'ขอดูวันหยุดสำเร็จ', holiday: { ...resHoliday } })
+        res.status(200).json({ message: 'ขอดูวันหยุดสำเร็จ', holiday: resHoliday  })
     },
     editHoliday: async (req, res) => {
         const { date, name } = req.body
@@ -39,7 +39,7 @@ const holidayController = {
             createError(400, 'ไม่พบวันหยุดนี้')
         }
 
-        let editData = {}
+        let editDta = {}
         if (date) editData.date = new Date(date)
         if (name) editData.name = name
 
