@@ -9,13 +9,13 @@ const holidayController = {
 
         // ตรวจสอบว่ามีวันหยุดนี้แล้วรึยัง
         myHoliday.map(i => {
-            if (i.name === name) {
-                createError(400, 'มีวันหยุดนี้อยู่แล้วนะจ๊ะ')
+            if (i.date === date) {
+                createError(400, 'มีวันหยุดวันที่นี้ในระบบอยู่แล้ว')
             }
         })
 
         const data = {
-            date: new Date(date),
+            date,
             name
         }
 
