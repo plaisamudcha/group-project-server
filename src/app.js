@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(morgan("dev"));
 app.use(cors());
 
-app.use("/auth", authRoute);
+app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
 app.use("/api/profiles", profileRoute);
 app.use("/api/attendance", attendanceRoute);
