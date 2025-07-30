@@ -19,7 +19,7 @@ Content-Type: application/json
 
 
 ###
-GET  http://localhost:3000/audit-logs HTTP/1.1
+GET  http://localhost:3000/api/audit-logs HTTP/1.1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImYzYzczOWJmLTIzNDQtNDhhOC1hY2E2LTMyNmVmNmRiYzhiYSIsInJvbGUiOiJIUiIsImlhdCI6MTc1MzMyODQwNiwiZXhwIjoxNzUzNDE0ODA2fQ.Dmx2bhe5U3XgFLMcRmGLc561Wgnbe8z6cv1NQ_jKYHA
 
 
