@@ -10,6 +10,13 @@ const userService = {
           include: {
             workPolicy: { select: { name: true } },
             shift: { select: { name: true } },
+            AnnualLeaveEntitlement : { select: { 
+              id: true,
+              leaveType: true,
+              entitledDays: true,
+              usedDays: true,
+              remainingDays: true,
+            } },
           },
         },
       },
