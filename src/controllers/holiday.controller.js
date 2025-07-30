@@ -28,19 +28,32 @@ const holidayController = {
             res.status(200).json({ message: 'ไม่พบข้อมูล' })
         }
 
-        res.status(200).json({ message: 'ขอดูวันหยุดสำเร็จ', holiday: resHoliday  })
+        res.status(200).json({ message: 'ขอดูวันหยุดสำเร็จ', holiday: resHoliday })
     },
     editHoliday: async (req, res) => {
         const { date, name } = req.body
         const { id } = req.params
+
+        if (date) {
+
+            const myHoliday = await holidayService.fetchHoliday()
+
+            // ตรวจสอบว่ามีวันหยุดนี้แล้วรึยัง
+            myHoliday.map(i => {
+                if (i.date === date) {
+                    createError(400, 'มีวันหยุดวันที่นี้ในระบบอยู่แล้ว')
+                }
+            })
+
+        }
 
         const isExist = await holidayService.fetchHolidayById(id)
         if (!isExist) {
             createError(400, 'ไม่พบวันหยุดนี้')
         }
 
-        let editDta = {}
-        if (date) editData.date = new Date(date)
+        let editData = {}
+        if (date) editData.date = date
         if (name) editData.name = name
 
         const editedHoliday = await holidayService.patchHoliday(id, editData)
@@ -55,7 +68,7 @@ const holidayController = {
         }
 
         const deletedHoliday = await holidayService.deleteHoliday(id)
-        res.status(200).json({message: 'ลบวันหยุดเรียบร้อย'})
+        res.status(200).json({ message: 'ลบวันหยุดเรียบร้อย' })
     }
 };
 
