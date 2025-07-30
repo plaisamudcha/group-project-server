@@ -11,7 +11,7 @@ const leaveController = {
         res.json(leavedata)
     },
     getUserLeaves: async (req, res) => {
-        const leavedata = await leaveService.getAllLeaveetUserLeave(req.user.id)
+        const leavedata = await leaveService.getUserLeave(req.user.id)
 
         res.json(leavedata)
     },
