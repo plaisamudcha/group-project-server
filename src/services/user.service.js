@@ -12,6 +12,14 @@ const userService = {
             shift: { select: { name: true } },
           },
         },
+        annualLeaveEntitlements : { select: { 
+              id: true,
+              year:true,
+              leaveType: true,
+              entitledDays: true,
+              usedDays: true,
+              remainingDays: true,
+            } },
       },
     });
 

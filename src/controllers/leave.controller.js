@@ -7,11 +7,11 @@ import calculateLeaveDays from "../utils/calculateLeaveDays.js"
 import dayjs from "dayjs";
 const leaveController = {
     getAllLeaves: async (req, res) => {
-        const leavedata = await leaveService.GetAllLeave()
+        const leavedata = await leaveService.getAllLeave()
         res.json(leavedata)
     },
     getUserLeaves: async (req, res) => {
-        const leavedata = await leaveService.GetUserLeave(req.user.id)
+        const leavedata = await leaveService.getUserLeave(req.user.id)
 
         res.json(leavedata)
     },
@@ -19,7 +19,7 @@ const leaveController = {
         const leaveRequestId = req.params.id
         const userId = req.user.id
         const userRole = req.user.role
-        const leavedetails = await leaveService.GetLeaveDetails(leaveRequestId)
+        const leavedetails = await leaveService.getLeaveDetails(leaveRequestId)
         if (!leavedetails) {
             createError(400, "ไม่พบข้อมูล")
         }
