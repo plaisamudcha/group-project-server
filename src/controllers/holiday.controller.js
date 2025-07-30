@@ -47,7 +47,7 @@ const holidayController = {
 
         }
 
-        const isExist = await holidayService.fetchHolidayById(id)
+        const isExist = await holidayService.fetchHolidayById(parseInt(id))
         if (!isExist) {
             createError(400, 'ไม่พบวันหยุดนี้')
         }
@@ -62,12 +62,12 @@ const holidayController = {
     deleteHoliday: async (req, res) => {
         const { id } = req.params
 
-        const isExist = await holidayService.fetchHolidayById(id)
+        const isExist = await holidayService.fetchHolidayById(parseInt(id))
         if (!isExist) {
             createError(400, 'ไม่พบวันหยุดนี้')
         }
 
-        const deletedHoliday = await holidayService.deleteHoliday(id)
+        const deletedHoliday = await holidayService.deleteHoliday(parseInt(id))
         res.status(200).json({ message: 'ลบวันหยุดเรียบร้อย' })
     }
 };
