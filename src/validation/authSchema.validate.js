@@ -17,6 +17,10 @@ const authSchema = {
     email: string().email("อีเมลไม่ถูกต้อง").required("กรุณาใส่อีเมล"),
     password: string().required("กรุณาใส่รหัสผ่าน"),
   }),
+  forgotSchema: object({
+    password: string()
+      .min(6, "กรุณาใส่รหัสผ่านอย่างน้อย 6 ตัว")
+  }),
 };
 
 export default authSchema;
