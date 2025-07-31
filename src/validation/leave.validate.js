@@ -16,7 +16,7 @@ const isSameOrAfter = (start, end) => {
 // endDate ต้องไม่เป็นอดีต และ เพิ่มจำกัดความยาวของเหตุผล
 
 const leaveSchema = {
-  createOrUpdateLeaveRequest: object({
+  createLeaveRequest: object({
     startDate: string()
       .required("กรุณาใส่วันลา")
       .nullable()
@@ -36,6 +36,25 @@ const leaveSchema = {
     status: string().oneOf(statusType, "สถานะลาไม่ถูกต้อง"),
     reason: string().required("กรุณาใส่เหตุผล").max(500, "เหตุผลยาวเกินไป"),
     userId: string().required("กรุณาใส่ ID ของ User"),
+  }),
+  UpdateLeaveRequest: object({
+    startDate: string()
+      .nullable()
+      .test("valid-format", "รูปแบบวันเริ่มไม่ถูกต้อง ", (value) =>
+        value ? isValidDate(value) : null
+      ),
+    endDate: string()
+      .nullable()
+      .test("valid-format", "รูปแบบวันสิ้นสุดไม่ถูกต้อง ", (value) =>
+        value ? isValidDate(value) : null
+      )
+      .test("isNotLessthanStartDate", "วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม", (value) =>
+        value ? isSameOrAfter(value) : null
+      ),
+    leaveType: string().nullable().oneOf(leaveType, "ประเภทการลาไม่ถูกต้อง"),
+    status: string().nullable().oneOf(statusType, "สถานะลาไม่ถูกต้อง"),
+    reason: string().nullable().max(500, "เหตุผลยาวเกินไป"),
+    userId: string().nullable(),
   }),
 };
 
