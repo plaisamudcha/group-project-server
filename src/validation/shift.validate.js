@@ -13,7 +13,7 @@ const isAfter = (start, end) => {
 }
 
 const shiftSchema = {
-  createOrUpdateShift: object({
+  createShift: object({
     name: string().required("กรุณาใส่ชื่อกะ"),
     inTime: string()
       .required("กรุณาใส่เวลาเริ่มงาน")
@@ -23,6 +23,23 @@ const shiftSchema = {
       ),
     outTime: date()
       .required("กรุณาใส่เวลาเลิกงาน")
+      .nullable()
+      .test("valid-time", "รูปแบบเวลาเลิกไม่ถูกต้อง", (value) =>
+        value ? isValidTime(value) : null
+      )
+      .test("is-after", "เวลาเลิกงานต้องมากกว่าเวลาเริ่มงาน", function (outTime) {
+        const { inTime } = this.parent;
+        return !outTime || !inTime || isAfter(inTime, outTime);
+      }),
+  }),
+  UpdateShift: object({
+    name: string().nullable(),
+    inTime: string()
+      .nullable()
+      .test("valid-time", "รูปแบบเวลาเริ่มไม่ถูกต้อง", (value) =>
+        value ? isValidTime(value) : null
+      ),
+    outTime: date()
       .nullable()
       .test("valid-time", "รูปแบบเวลาเลิกไม่ถูกต้อง", (value) =>
         value ? isValidTime(value) : null
