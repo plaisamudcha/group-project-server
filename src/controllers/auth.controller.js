@@ -83,15 +83,10 @@ const authController = {
       createError(401, "กรุณาเข้าสู่ระบบ");
     }
     const newrefreshToken = genTokenJWT.refreshToken({ id: userId, role });
-    const newAssessToken = genTokenJWT.loginToken({ id: userId, role });
+    const newAccessToken = genTokenJWT.loginToken({ id: userId, role });
     await authService.updateRefreshToken(newrefreshToken, userId);
-    res.cookie("refreshToken", newrefreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "Strict",
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    });
-    res.json({ message: "รีเฟรชโทเค็นสำเร็จ", newAssessToken });
+
+    res.json({ message: "รีเฟรชโทเค็นสำเร็จ", newAccessToken });
   },
   getMe: async (req, res) => {
     const user = await authService.findId(req.user.id);
