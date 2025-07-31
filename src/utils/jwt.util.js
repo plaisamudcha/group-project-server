@@ -1,10 +1,11 @@
 import jwt from "jsonwebtoken";
+import createError from "./create-error.util.js";
 
 const genTokenJWT = {
   loginToken: (payload) => {
     return jwt.sign(payload, process.env.SECRET_KEY, {
       algorithm: "HS256",
-      expiresIn: "15m",
+      expiresIn: "20s",
     });
   },
   refreshToken: (payload) => {
@@ -14,12 +15,22 @@ const genTokenJWT = {
     });
   },
   checkToken: (token) => {
-    return jwt.verify(token, process.env.SECRET_KEY, { algorithms: ["HS256"] });
+    try {
+      return jwt.verify(token, process.env.SECRET_KEY, {
+        algorithms: ["HS256"],
+      });
+    } catch (error) {
+      createError(401, "Token is invalid or expired");
+    }
   },
   checkrefreshToken: (token) => {
-    return jwt.verify(token, process.env.REFRESH_KEY, {
-      algorithms: ["HS256"],
-    });
+    try {
+      return jwt.verify(token, process.env.REFRESH_KEY, {
+        algorithms: ["HS256"],
+      });
+    } catch (error) {
+      createError(401, "Refresh token is invalid or expired");
+    }
   },
   forgotPasswordToken: (payload) => {
     return jwt.sign(payload, process.env.RESET_KEY, {
