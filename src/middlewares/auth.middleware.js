@@ -8,7 +8,7 @@ const authMiddleware = {
       if (!authHeader) createError(401, "Token is missing");
       const token = authHeader.split(" ")[1];
       const payload = genTokenJWT.checkToken(token);
-      console.log('payload', payload)
+      console.log("payload", payload);
       req.user = payload;
       next();
     } catch (err) {
