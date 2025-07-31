@@ -56,7 +56,7 @@ const holidayController = {
         if (date) editData.date = date
         if (name) editData.name = name
 
-        const editedHoliday = await holidayService.patchHoliday(id, editData)
+        const editedHoliday = await holidayService.patchHoliday(parseInt(id), editData)
         res.status(200).json({ message: 'แก้ไขวันหยุดเรียบร้อย', patchedData: editedHoliday })
     },
     deleteHoliday: async (req, res) => {
