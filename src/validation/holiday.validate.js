@@ -18,9 +18,9 @@ const holidaySchema = {
       .required("กรุณาใส่วันหยุด")
       .nullable()
       .test("valid-format", "รูปแบบวันหยุดไม่ถูกต้อง", (value) =>
-        value ? isValidDate(value) : null
+        value ? isValidDate(value) : true
       ).test("isYearAgo", "กรุณาตรวจสอบปี (ต้องเป็นปีปัจุบันหรือปีหน้า)", (value) =>
-        value ? isThisYearOrAfter(value) : null
+        value ? isThisYearOrAfter(value) : true
       ),
     name: string().required("กรุณาใส่ชื่อวันหยุด"),
   }),
@@ -28,9 +28,9 @@ const holidaySchema = {
     date: string()
       .nullable()
       .test("valid-format", "รูปแบบวันหยุดไม่ถูกต้อง", (value) =>
-        value ? isValidDate(value) : null
+        value ? isValidDate(value) : true
       ).test("isYearAgo", "กรุณาตรวจสอบปี (ต้องเป็นปีปัจุบันหรือปีหน้า)", (value) =>
-        value ? isThisYearOrAfter(value) : null
+        value ? isThisYearOrAfter(value) : true
       ),
     name: string().nullable(),
   }),

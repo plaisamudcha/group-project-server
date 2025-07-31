@@ -21,16 +21,16 @@ const leaveSchema = {
       .required("กรุณาใส่วันลา")
       .nullable()
       .test("valid-format", "รูปแบบวันเริ่มไม่ถูกต้อง ", (value) =>
-        value ? isValidDate(value) : null
+        value ? isValidDate(value) : true
       ),
     endDate: string()
       .required("กรุณาใส่วันลา")
       .nullable()
       .test("valid-format", "รูปแบบวันสิ้นสุดไม่ถูกต้อง ", (value) =>
-        value ? isValidDate(value) : null
+        value ? isValidDate(value) : true
       )
       .test("isNotLessthanStartDate", "วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม", (value) =>
-        value ? isSameOrAfter(value) : null
+        value ? isSameOrAfter(value) : true
       ),
     leaveType: string().oneOf(leaveType, "ประเภทการลาไม่ถูกต้อง"),
     status: string().oneOf(statusType, "สถานะลาไม่ถูกต้อง"),
@@ -41,15 +41,15 @@ const leaveSchema = {
     startDate: string()
       .nullable()
       .test("valid-format", "รูปแบบวันเริ่มไม่ถูกต้อง ", (value) =>
-        value ? isValidDate(value) : null
+        value ? isValidDate(value) : true
       ),
     endDate: string()
       .nullable()
       .test("valid-format", "รูปแบบวันสิ้นสุดไม่ถูกต้อง ", (value) =>
-        value ? isValidDate(value) : null
+        value ? isValidDate(value) : true
       )
       .test("isNotLessthanStartDate", "วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม", (value) =>
-        value ? isSameOrAfter(value) : null
+        value ? isSameOrAfter(value) : true
       ),
     leaveType: string().nullable().oneOf(leaveType, "ประเภทการลาไม่ถูกต้อง"),
     status: string().nullable().oneOf(statusType, "สถานะลาไม่ถูกต้อง"),
