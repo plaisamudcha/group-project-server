@@ -6,6 +6,7 @@ const profileService = {
       where: {
         userId: userId,
       },
+      include: {workPolicy: true, shift: true},
     });
   },
 
