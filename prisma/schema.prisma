@@ -42,6 +42,7 @@ model WorkPolicy {
   startTime                  String
   endTime                    String
   allowedLateMinutesPerMonth Int
+  workingDays                Json @default("[\"MONDAY\", \"TUESDAY\", \"WEDNESDAY\", \"THURSDAY\", \"FRIDAY\"]")
   deductIfLateOver           Int               @default(0)
   minHoursForHalfDay         Int
   halfDayAbsentRule          Float

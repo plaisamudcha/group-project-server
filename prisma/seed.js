@@ -7,6 +7,7 @@ const workPolicies = [
     startTime: "08:30",
     endTime: "17:30",
     allowedLateMinutesPerMonth: 60,
+    workingDays: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
     minHoursForHalfDay: 4,
     halfDayAbsentRule: 0.5,
     deductIfLateOver: 0,
@@ -16,6 +17,7 @@ const workPolicies = [
     startTime: "09:00",
     endTime: "16:00",
     allowedLateMinutesPerMonth: 30,
+    workingDays: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"],
     minHoursForHalfDay: 4,
     halfDayAbsentRule: 0.5,
     deductIfLateOver: 0,
@@ -37,6 +39,34 @@ const holidays2025 = [
 
 async function main() {
   console.log("🌱 Seeding Work Policies...");
+  await prisma.leaveAdjustment.deleteMany();
+  await prisma.auditLog.deleteMany();
+  await prisma.annualLeaveEntitlement.deleteMany();
+  await prisma.refreshToken.deleteMany();
+
+  // 2. ลบ EmployeeProfile และ Attendance ที่อ้างอิงถึง User, WorkPolicy, Shift
+  await prisma.employeeProfile.deleteMany();
+  await prisma.attendance.deleteMany();
+
+  // 3. ลบ LeaveRequest ที่อ้างอิงถึง User
+  await prisma.leaveRequest.deleteMany();
+
+  // 4. ตอนนี้สามารถลบ User, WorkPolicy, และ Shift ได้แล้ว
+  await prisma.user.deleteMany();
+  await prisma.workPolicy.deleteMany();
+  await prisma.shift.deleteMany();
+
+  // 5. ลบตารางที่ไม่ค่อยมีใครอ้างอิงถึง
+  await prisma.holiday.deleteMany();
+
+  console.log('✅ Old data cleared.');
+
+  // --- สร้างข้อมูลใหม่ ---
+  console.log('🌱 Seeding new data...');
+  //
+  // ใส่โค้ดสำหรับสร้างข้อมูล (seed) ของคุณต่อจากตรงนี้
+  // เช่น await prisma.workPolicy.createMany({...})
+  //
   const firstPolicy = await prisma.workPolicy.create({ data: workPolicies[0] }); // ⬅ สร้างตัวแรกไว้เก็บ ID
   for (let i = 1; i < workPolicies.length; i++) {
     await prisma.workPolicy.create({ data: workPolicies[i] });
