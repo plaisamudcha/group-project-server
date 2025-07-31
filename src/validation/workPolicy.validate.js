@@ -47,12 +47,12 @@ const workPolicySchema = {
     startTime: string()
       .nullable()
       .test("valid-time", "รูปแบบเวลาเริ่มไม่ถูกต้อง", (value) =>
-        value ? isValidTime(value) : null
+        value ? isValidTime(value) : true
       ),
     endTime: string()
       .nullable()
       .test("valid-time", "รูปแบบเวลาเลิกไม่ถูกต้อง", (value) =>
-        value ? isValidTime(value) : null
+        value ? isValidTime(value) : true
       ).test("is-after", "เวลาเลิกต้องมากกว่าเวลาเริ่ม", function (endTime) {
         const { startTime } = this.parent;
         return !endTime || !startTime || isAfter(startTime, endTime);
