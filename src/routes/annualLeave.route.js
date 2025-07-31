@@ -16,5 +16,9 @@ annualLeaveRoute.put(
   authMiddleware.isRole("HR"),
   annualLeaveController.updateEntitlement
 );
+annualLeaveRoute.post("/create", authMiddleware.isRole("HR"),annualLeaveController.createOrUpdateUserEntitlements);
+annualLeaveRoute.put("/create", authMiddleware.isRole("HR"),annualLeaveController.createOrUpdateUserEntitlements);
+annualLeaveRoute.post("/createbulk", authMiddleware.isRole("HR"),annualLeaveController.createBulkEntitlements);
+annualLeaveRoute.delete("/user/:userId/year/:year", authMiddleware.isRole("HR"),annualLeaveController.deleteUserEntitlements);
 
 export default annualLeaveRoute;
