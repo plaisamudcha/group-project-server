@@ -34,10 +34,28 @@ const holidayService = {
     const allWorkingDays = new Set();
     for (const policy of workPolicies) {
       try {
-        const workingDays = JSON.parse(policy.workingDays);
+        // Debug: ดูว่า workingDays เป็นอะไร
+        console.log("workingDays value:", policy.workingDays);
+        console.log("workingDays type:", typeof policy.workingDays);
+        console.log("Is array:", Array.isArray(policy.workingDays));
+
+        let workingDays = [];
+
+        // เช็คประเภทข้อมูลก่อน
+        if (typeof policy.workingDays === "string") {
+          workingDays = policy.workingDays.split(",").map((day) => day.trim());
+        } else if (Array.isArray(policy.workingDays)) {
+          workingDays = policy.workingDays;
+        } else if (policy.workingDays) {
+          // ถ้าเป็น object หรืออย่างอื่น ให้ลอง stringify แล้ว parse
+          console.log("Unknown type, trying to convert:", policy.workingDays);
+          workingDays = Object.values(policy.workingDays).flat();
+        }
+
         workingDays.forEach((day) => allWorkingDays.add(day));
       } catch (err) {
         console.error("Error parsing workingDays", err);
+        console.error("Policy:", policy);
       }
     }
 
@@ -49,7 +67,6 @@ const holidayService = {
 
     return isInvalid;
   },
-
   patchHoliday: async (id, data) => {
     return await prisma.holiday.update({
       where: { id },
