@@ -17,6 +17,7 @@ const workPolicyController = {
       minHoursForHalfDay,
       halfDayAbsentRule,
       remark,
+      workingDays,
     } = req.body;
     const workPolicy = await workPolicyService.createPolicy(
       name,
@@ -26,12 +27,13 @@ const workPolicyController = {
       deductIfLateOver,
       minHoursForHalfDay,
       halfDayAbsentRule,
-      remark
+      remark,
+      workingDays
     );
     const data = {
       action: "CREATE",
       relatedTable: "workPolicy",
-      realtedId: workPolicy.id,
+      relatedId: workPolicy.id,
       detail: "สร้าง work policy ใหม่",
       userId: req.user.id,
     };
@@ -50,10 +52,10 @@ const workPolicyController = {
       halfDayAbsentRule,
       remark,
     } = req.body;
-    const existPolicy = await workPolicyService.getPolicyById(id);
+    const existPolicy = await workPolicyService.getPolicyById(parseInt(id));
     if (!existPolicy) createError(400, "ไม่พบ Work policy ที่แก้ไข");
     const workPolicy = await workPolicyService.updatePolicy(
-      id,
+      parseInt(id),
       name,
       startTime,
       endTime,
@@ -66,7 +68,7 @@ const workPolicyController = {
     const data = {
       action: "UPDATE",
       relatedTable: "workPolicy",
-      realtedId: workPolicy.id,
+      relatedId: workPolicy.id,
       detail: "แก้ไข work policy",
       userId: req.user.id,
     };

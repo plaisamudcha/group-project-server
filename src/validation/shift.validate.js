@@ -1,4 +1,5 @@
 import { date, number, object, ref, string } from "yup";
+import dayjs from "dayjs";
 
 // outtime (ต้องเป็นเวลาที่มากกว่าตอนเข้า)
 
@@ -21,7 +22,7 @@ const shiftSchema = {
       .test("valid-time", "รูปแบบเวลาเริ่มไม่ถูกต้อง", (value) =>
         value ? isValidTime(value) : true
       ),
-    outTime: date()
+    outTime: string()
       .required("กรุณาใส่เวลาเลิกงาน")
       .nullable()
       .test("valid-time", "รูปแบบเวลาเลิกไม่ถูกต้อง", (value) =>
@@ -39,7 +40,7 @@ const shiftSchema = {
       .test("valid-time", "รูปแบบเวลาเริ่มไม่ถูกต้อง", (value) =>
         value ? isValidTime(value) : true
       ),
-    outTime: date()
+    outTime: string()
       .nullable()
       .test("valid-time", "รูปแบบเวลาเลิกไม่ถูกต้อง", (value) =>
         value ? isValidTime(value) : true
