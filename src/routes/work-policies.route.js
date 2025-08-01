@@ -10,7 +10,15 @@ workPolicyRoute.use(authMiddleware.checkToken);
 workPolicyRoute.use(authMiddleware.isRole("HR"));
 
 workPolicyRoute.get("/", workPolicyController.getAllPolicies);
-workPolicyRoute.post("/", validate(workPolicySchema.createOrUpdateWorkPolicy), workPolicyController.createPolicy);
-workPolicyRoute.put("/:id", validate(workPolicySchema.UpdateWorkPolicy), workPolicyController.updatePolicy);
+workPolicyRoute.post(
+  "/",
+  validate(workPolicySchema.createOrUpdateWorkPolicy),
+  workPolicyController.createPolicy
+);
+workPolicyRoute.put(
+  "/:id",
+  validate(workPolicySchema.UpdateWorkPolicy),
+  workPolicyController.updatePolicy
+);
 
 export default workPolicyRoute;

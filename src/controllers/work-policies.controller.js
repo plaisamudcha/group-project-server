@@ -8,6 +8,7 @@ const workPolicyController = {
     res.json({ policies });
   },
   createPolicy: async (req, res) => {
+    console.log(req.body);
     const {
       name,
       startTime,
