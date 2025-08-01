@@ -5,7 +5,7 @@ const genTokenJWT = {
   loginToken: (payload) => {
     return jwt.sign(payload, process.env.SECRET_KEY, {
       algorithm: "HS256",
-      expiresIn: "20s",
+      expiresIn: "1h",
     });
   },
   refreshToken: (payload) => {
