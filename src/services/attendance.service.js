@@ -38,13 +38,9 @@ const attendanceService = {
 
     const startTimeObj = dayjs(`${today} ${startTimeStr}`, "YYYY-MM-DD HH:mm");
 
-    // const startTimeObj = dayjs(`${today} ${profile.workPolicy.startTime}`, "YYYY-MM-DD HH:mm"); // "2025-07-25 09:00"
-
     const isLate = now.isAfter(startTimeObj);
     const lateMinutes = Math.max(0, now.diff(startTimeObj, "minute"));
-    // console.log('clockIn:', now.format("YYYY-MM-DD HH:mm"));
-    // console.log('shiftStart:', startTimeObj.format("YYYY-MM-DD HH:mm"));
-    // console.log('lateMinutes:', lateMinutes);
+
     const attendance = await prisma.attendance.create({
       data: {
         userId,
