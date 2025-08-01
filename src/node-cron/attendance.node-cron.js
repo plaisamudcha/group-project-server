@@ -11,10 +11,11 @@ dayjs.extend(timezone);
  * Cron Job นี้จะทำงานทุกวันตอน 23:59 น. เพื่อสรุปและสร้างบันทึกการเข้างาน
  * สำหรับพนักงานที่ยังไม่มีการบันทึกข้อมูลในวันนั้น (เช่น ไม่ได้ clock-in)
  * โดยจะกำหนดสถานะเป็น ABSENT (ขาดงาน) หรือ ON_LEAVE (ลา)
+ * รองรับการลาครึ่งวัน: ถ้าลาครึ่งวันแต่ไม่เข้างานเลย จะถือว่าขาดงาน
  */
 const setupAttendanceFinalizerCron = () => {
   cron.schedule(
-    "59 23 * * *", // ทำงานทุกวันตอน 23:59 น.
+    "59 23 * * *",
     async () => {
       const nowInBkk = dayjs().tz("Asia/Bangkok");
       console.log(
@@ -27,7 +28,6 @@ const setupAttendanceFinalizerCron = () => {
         const today = nowInBkk.format("YYYY-MM-DD");
         const dayOfWeek = nowInBkk.format("dddd").toUpperCase();
 
-        // --- 1. ตรวจสอบก่อนว่าวันนี้เป็นวันหยุดหรือไม่ ---
         const holidayToday = await prisma.holiday.findFirst({
           where: { date: today },
         });
@@ -39,7 +39,6 @@ const setupAttendanceFinalizerCron = () => {
           return;
         }
 
-        // --- 2. ดึงข้อมูลที่จำเป็นทั้งหมด ---
         const employees = await prisma.user.findMany({
           where: {
             role: { in: ["EMPLOYEE", "HR"] },
@@ -67,7 +66,6 @@ const setupAttendanceFinalizerCron = () => {
         }
         const employeeIds = employees.map((emp) => emp.id);
 
-        // ดึงข้อมูลการเข้างานที่มีอยู่, และข้อมูลการลาของวันนี้
         const [existingAttendances, leavesToday] = await Promise.all([
           prisma.attendance.findMany({
             where: { userId: { in: employeeIds }, date: today },
@@ -77,52 +75,52 @@ const setupAttendanceFinalizerCron = () => {
             where: {
               userId: { in: employeeIds },
               status: "APPROVED",
-              startDate: { lte: today },
-              endDate: { gte: today },
+              // ✅ แก้ไข: ใช้ toDate() เพื่อให้ Prisma เปรียบเทียบ DateTime ได้ถูกต้อง
+              startDate: { lte: nowInBkk.toDate() },
+              endDate: { gte: nowInBkk.toDate() },
             },
-            select: { userId: true },
+            select: { userId: true, leaveSession: true },
           }),
         ]);
 
         const usersWithAttendance = new Set(
           existingAttendances.map((att) => att.userId)
         );
-        const usersOnLeave = new Set(leavesToday.map((leave) => leave.userId));
 
-        // --- 3. เตรียมข้อมูลสำหรับพนักงานที่ยังไม่มีบันทึกการเข้างาน ---
+        const userLeaveSessions = new Map(
+          leavesToday.map((leave) => [leave.userId, leave.leaveSession])
+        );
+
         const attendanceDataToCreate = [];
 
         for (const employee of employees) {
-          // ข้าม: ถ้ามีบันทึกของวันนี้อยู่แล้ว (เช่น clock-in แล้ว)
           if (usersWithAttendance.has(employee.id)) {
             continue;
           }
 
-          // ข้าม: ถ้าวันนี้ไม่ใช่วันทำงานของพนักงาน
           const workPolicy = employee.employeeProfile?.workPolicy;
           if (!workPolicy?.workingDays?.includes(dayOfWeek)) {
             continue;
           }
+            
+          const leaveSession = userLeaveSessions.get(employee.id);
 
-          // ตรวจสอบว่าเป็นวันลาหรือไม่
-          const isOnLeave = usersOnLeave.has(employee.id);
-
-          if (isOnLeave) {
-            // ถ้าเป็นวันลา ให้สร้างบันทึกเป็น ON_LEAVE
+          // ถ้าเป็นการลาเต็มวัน (FULL_DAY) เท่านั้น ถึงจะบันทึกเป็น ON_LEAVE
+          if (leaveSession === "FULL_DAY") {
             attendanceDataToCreate.push({
               userId: employee.id,
               date: today,
-              isAbsent: false, // ไม่นับว่าขาดงาน
+              isAbsent: false,
               status: "ON_LEAVE",
               workPolicyId: employee.employeeProfile.workPolicyId,
               shiftId: employee.employeeProfile.shiftId,
             });
           } else {
-            // ถ้าไม่ใช่วันลา และไม่มีการ clock-in ให้สร้างบันทึกเป็น ABSENT
+            // ถ้าไม่ลา, หรือลาแค่ครึ่งวัน (HALF_DAY_MORNING/AFTERNOON) แต่ไม่ clock-in เลยทั้งวัน => ถือว่าขาดงาน (ABSENT)
             attendanceDataToCreate.push({
               userId: employee.id,
               date: today,
-              isAbsent: true, // ขาดงาน
+              isAbsent: true,
               status: "ABSENT",
               workPolicyId: employee.employeeProfile.workPolicyId,
               shiftId: employee.employeeProfile.shiftId,
@@ -130,7 +128,6 @@ const setupAttendanceFinalizerCron = () => {
           }
         }
 
-        // --- 4. สร้างข้อมูลทั้งหมดในครั้งเดียว ---
         if (attendanceDataToCreate.length > 0) {
           const result = await prisma.attendance.createMany({
             data: attendanceDataToCreate,
