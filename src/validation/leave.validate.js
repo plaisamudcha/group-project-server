@@ -10,8 +10,8 @@ const isValidDate = (value, format = "YYYY-MM-DDTHH:mm") => {
 };
 
 const isSameOrAfter = (start, end) => {
-  return dayjs(end).isAfter(dayjs(start)) || dayjs(end).isSame(dayjs(start))
-}
+  return dayjs(end).isSame(dayjs(start)) || dayjs(end).isAfter(dayjs(start));
+};
 
 // endDate ต้องไม่เป็นอดีต และ เพิ่มจำกัดความยาวของเหตุผล
 
@@ -20,21 +20,31 @@ const leaveSchema = {
     startDate: string()
       .required("กรุณาใส่วันลา")
       .nullable()
-      .test("valid-format", "รูปแบบวันเริ่มไม่ถูกต้อง ", (value) =>
+      .test("valid-format", "รูปแบบวันเริ่มไม่ถูกต้อง", (value) =>
         value ? isValidDate(value) : true
       ),
+
     endDate: string()
       .required("กรุณาใส่วันลา")
       .nullable()
-      .test("valid-format", "รูปแบบวันสิ้นสุดไม่ถูกต้อง ", (value) =>
+      .test("valid-format", "รูปแบบวันสิ้นสุดไม่ถูกต้อง", (value) =>
         value ? isValidDate(value) : true
       )
-      .test("isNotLessthanStartDate", "วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม", (value) =>
-        value ? isSameOrAfter(value) : true
+      .test(
+        "isNotLessthanStartDate",
+        "วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม",
+        function (value) {
+          const start = this.parent.startDate;
+          return value && start ? isSameOrAfter(value, start) : true;
+        }
       ),
+
     leaveType: string().oneOf(leaveType, "ประเภทการลาไม่ถูกต้อง"),
+
     status: string().oneOf(statusType, "สถานะลาไม่ถูกต้อง"),
+
     reason: string().required("กรุณาใส่เหตุผล").max(500, "เหตุผลยาวเกินไป"),
+
     userId: string().required("กรุณาใส่ ID ของ User"),
   }),
   UpdateLeaveRequest: object({
@@ -48,8 +58,10 @@ const leaveSchema = {
       .test("valid-format", "รูปแบบวันสิ้นสุดไม่ถูกต้อง ", (value) =>
         value ? isValidDate(value) : true
       )
-      .test("isNotLessthanStartDate", "วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม", (value) =>
-        value ? isSameOrAfter(value) : true
+      .test(
+        "isNotLessthanStartDate",
+        "วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม",
+        (value) => (value ? isSameOrAfter(value) : true)
       ),
     leaveType: string().nullable().oneOf(leaveType, "ประเภทการลาไม่ถูกต้อง"),
     status: string().nullable().oneOf(statusType, "สถานะลาไม่ถูกต้อง"),
