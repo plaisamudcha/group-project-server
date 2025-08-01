@@ -9,6 +9,7 @@ const profileService = {
         workPolicy: true,
         shift: true,
       },
+      include: {workPolicy: true, shift: true},
     });
   },
 

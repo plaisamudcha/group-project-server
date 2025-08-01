@@ -1,6 +1,8 @@
 import express from "express";
 import authMiddleware from '../middlewares/auth.middleware.js';
 import attendanceController from "../controllers/attendance.controller.js";
+import { validate } from "node-cron";
+import attendanceSchema from "../validation/attendance.validate.js";
 
 const attendanceRoute = express.Router();
 

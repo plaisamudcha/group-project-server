@@ -1,6 +1,8 @@
 import express from "express";
 import auditController from "../controllers/audit-log.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
+import validate from "../validation/validate.validate.js";
+import auditLogSchema from "../validation/audit-log.validate.js";
 
 const auditRoute = express.Router();
 

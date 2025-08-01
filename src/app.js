@@ -14,10 +14,12 @@ import auditRoute from "./routes/audit-log.route.js";
 import notFoundMiddleware from "./middlewares/not-found.middleware.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
 import annualLeaveRoute from "./routes/annualLeave.route.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 app.use(express.json());
 app.use(morgan("dev"));
+app.use(cookieParser());
 app.use(
   cors({
     origin: "http://localhost:5173",
