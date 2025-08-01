@@ -42,7 +42,7 @@ model WorkPolicy {
   startTime                  String
   endTime                    String
   allowedLateMinutesPerMonth Int
-  workingDays                Json @default("[\"MONDAY\", \"TUESDAY\", \"WEDNESDAY\", \"THURSDAY\", \"FRIDAY\"]")
+  workingDays                Json              @default("[\"MONDAY\", \"TUESDAY\", \"WEDNESDAY\", \"THURSDAY\", \"FRIDAY\"]")
   deductIfLateOver           Int               @default(0)
   minHoursForHalfDay         Int
   halfDayAbsentRule          Float
@@ -85,18 +85,19 @@ model Attendance {
 }
 
 model LeaveRequest {
-  id          Int               @id @default(autoincrement())
-  startDate   String
-  endDate     String
-  leaveDays   Float
-  createdAt   DateTime          @default(now())
-  updateAt    DateTime?         @updatedAt
-  leaveType   LeaveType
-  status      StatusLeave       @default(PENDING)
-  reason      String
-  userId      Int
-  adjustments LeaveAdjustment[]
-  user        User              @relation(fields: [userId], references: [id])
+  id           Int               @id @default(autoincrement())
+  startDate    String
+  endDate      String
+  leaveDays    Float
+  createdAt    DateTime          @default(now())
+  updateAt     DateTime?         @updatedAt
+  leaveSession LeaveSession?      
+  leaveType    LeaveType
+  status       StatusLeave       @default(PENDING)
+  reason       String
+  userId       Int
+  adjustments  LeaveAdjustment[]
+  user         User              @relation(fields: [userId], references: [id])
 
   @@index([userId], map: "LeaveRequest_userId_fkey")
 }
@@ -214,4 +215,10 @@ enum LeaveAdjustment_adjustmentType {
   ON_LEAVE
   COMPLETED
   INCOMPLETED
+}
+
+enum LeaveSession {
+  FULL_DAY
+  HALF_DAY_MORNING
+  HALF_DAY_AFTERNOON
 }
