@@ -88,6 +88,27 @@ const annualLeaveService = {
             },
         });
     },
+    getEntitlementsByUserIdAndYear: async (userId, year, tx = prisma) => {
+    return tx.annualLeaveEntitlement.findMany({
+      where: { userId: userId, year: year },
+    });
+  },
+
+  deleteEntitlementsByUserAndYear: async (userId, year, tx = prisma) => {
+    return tx.annualLeaveEntitlement.deleteMany({
+      where: {
+        userId: userId,
+        year: year,
+      },
+    });
+  },
+
+  createManyEntitlements: async (entitlementsData, tx = prisma) => {
+    return tx.annualLeaveEntitlement.createMany({
+      data: entitlementsData,
+      skipDuplicates: true,
+    });
+  },
 };
 
 export default annualLeaveService;

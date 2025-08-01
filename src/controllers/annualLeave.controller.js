@@ -75,7 +75,135 @@ const annualLeaveController = {
       }
       next(error);
     }
-
   },
+  createOrUpdateUserEntitlements: async (req, res, next) => {
+
+    const { userId, year, entitlements } = req.body;
+
+    if (!userId || !year || !entitlements || !Array.isArray(entitlements)) {
+     createError(400, "ข้อมูลไม่ถูกต้อง กรุณาระบุ userId, year, และ entitlements");
+    }
+
+    const existingEntitlements = await annualLeaveService.getEntitlementsByUserIdAndYear(parseInt(userId), parseInt(year));
+    const usedDaysMap = new Map();
+    existingEntitlements.forEach(ent => {
+      usedDaysMap.set(ent.leaveType, ent.usedDays);
+    });
+
+    const entitlementsToCreate = entitlements.map(ent => {
+      const usedDays = usedDaysMap.get(ent.leaveType) || 0;
+      const remainingDays = ent.entitledDays - usedDays;
+
+      if (remainingDays < 0) {
+        throw createError(400, `โควต้าที่กำหนด (${ent.entitledDays}) น้อยกว่าจำนวนวันที่ใช้ไปแล้ว (${usedDays}) สำหรับประเภท ${ent.leaveType}`);
+      }
+
+      return {
+        userId: parseInt(userId),
+        year: parseInt(year),
+        leaveType: ent.leaveType,
+        entitledDays: ent.entitledDays,
+        usedDays: usedDays,
+        remainingDays: remainingDays,
+      };
+    });
+
+    const result = await prisma.$transaction(async (tx) => {
+      await annualLeaveService.deleteEntitlementsByUserAndYear(parseInt(userId), parseInt(year), tx);
+      const createdResult = await annualLeaveService.createManyEntitlements(entitlementsToCreate, tx);
+      await auditService.createAuditLog({
+        action: 'UPDATE',
+        relatedTable: 'AnnualLeaveEntitlement',
+        relatedId: parseInt(userId),
+        detail: `Created/Updated ${createdResult.count} entitlement types for user ID ${userId} for year ${year}.`,
+        userId: req.user.id,
+      }, tx);
+      return createdResult;
+    });
+
+    res.status(201).json({
+      message: `สร้าง/อัปเดตโควต้าสำเร็จ ${result.count} รายการ`,
+      data: result,
+    });
+
+  }
+  ,
+
+  createBulkEntitlements: async (req, res, next) => {
+    
+      const { year, userIds, entitlements } = req.body;
+
+      if (!userIds || userIds.length === 0 || !entitlements || entitlements.length === 0) {
+        return next(createError(400, "กรุณาระบุข้อมูลพนักงานและโควต้าให้ครบถ้วน"));
+      }
+
+      const entitlementsToCreate = [];
+      for (const userId of userIds) {
+        for (const ent of entitlements) {
+          entitlementsToCreate.push({
+            userId: parseInt(userId),
+            year: parseInt(year),
+            leaveType: ent.leaveType,
+            entitledDays: ent.entitledDays,
+            remainingDays: ent.entitledDays,
+          });
+        }
+      }
+
+      const result = await prisma.$transaction(async (tx) => {
+        const createdResult = await annualLeaveService.createManyEntitlements(entitlementsToCreate, tx);
+        await auditService.createAuditLog({
+          action: 'CREATE',
+          relatedTable: 'AnnualLeaveEntitlement',
+          relatedId: 0,
+          detail: `Bulk created ${createdResult.count} entitlements for ${userIds.length} users for the year ${year}.`,
+          userId: req.user.id,
+        }, tx);
+        return createdResult;
+      });
+
+      res.status(201).json({
+        message: `สร้างโควต้าวันลาสำเร็จจำนวน ${result.count} รายการ`,
+        data: result,
+      });
+
+   
+  },
+
+
+  deleteUserEntitlements: async (req, res, next) => {
+
+    const { userId, year } = req.params;
+
+    if (!userId || !year) {
+      return next(createError(400, "กรุณาระบุ userId และ year"));
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const deletedResult = await annualLeaveService.deleteEntitlementsByUserAndYear(parseInt(userId), parseInt(year), tx);
+
+      if (deletedResult.count === 0) {
+        // ไม่จำเป็นต้อง throw error แค่แจ้งว่าไม่พบข้อมูลให้ลบ
+        console.log(`No entitlements found to delete for user ID ${userId} in year ${year}.`);
+      }
+
+      await auditService.createAuditLog({
+        action: 'DELETE',
+        relatedTable: 'AnnualLeaveEntitlement',
+        relatedId: parseInt(userId),
+        detail: `Deleted ${deletedResult.count} entitlement types for user ID ${userId} for year ${year}.`,
+        userId: req.user.id,
+      }, tx);
+
+      return deletedResult;
+    });
+
+    res.status(200).json({
+      message: `ลบโควต้าของพนักงาน ID ${userId} ในปี ${year} สำเร็จจำนวน ${result.count} รายการ`,
+      data: result,
+    });
+
+
+  }
 }
 export default annualLeaveController;

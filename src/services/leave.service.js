@@ -1,16 +1,26 @@
 import prisma from "../config/prisma.js";
 
 const leaveService = {
-    getAllLeave: () => {
-        return prisma.leaveRequest.findMany({
-            orderBy: {
-                createdAt: 'desc'
-            },
-            include: {
-                adjustments: true
+ getAllLeave: () => {
+    return prisma.leaveRequest.findMany({
+        orderBy: {
+            createdAt: 'desc'
+        },
+        include: {
+            adjustments: true,
+            user: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                    // เพิ่ม relation ที่ต้องการเข้ามาใน select block
+                    employeeProfile: true
+                }
             }
-        });
-    },
+        }
+    });
+},
     getUserLeave: (userid) => {
         return prisma.leaveRequest.findMany(
             {
