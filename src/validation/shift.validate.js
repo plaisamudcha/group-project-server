@@ -10,8 +10,8 @@ const isValidTime = (value) => {
 
 //เช็คความต่างเวลา
 const isAfter = (start, end) => {
-  return dayjs(end, 'HH-mm').isAfter(dayjs(start, 'HH-mm'))
-}
+  return dayjs(end, "HH-mm").isAfter(dayjs(start, "HH-mm"));
+};
 
 const shiftSchema = {
   createShift: object({
@@ -28,10 +28,14 @@ const shiftSchema = {
       .test("valid-time", "รูปแบบเวลาเลิกไม่ถูกต้อง", (value) =>
         value ? isValidTime(value) : true
       )
-      .test("is-after", "เวลาเลิกงานต้องมากกว่าเวลาเริ่มงาน", function (outTime) {
-        const { inTime } = this.parent;
-        return !outTime || !inTime || isAfter(inTime, outTime);
-      }),
+      .test(
+        "is-after",
+        "เวลาเลิกงานต้องมากกว่าเวลาเริ่มงาน",
+        function (outTime) {
+          const { inTime } = this.parent;
+          return !outTime || !inTime || isAfter(inTime, outTime);
+        }
+      ),
   }),
   UpdateShift: object({
     name: string().nullable(),
@@ -45,10 +49,14 @@ const shiftSchema = {
       .test("valid-time", "รูปแบบเวลาเลิกไม่ถูกต้อง", (value) =>
         value ? isValidTime(value) : true
       )
-      .test("is-after", "เวลาเลิกงานต้องมากกว่าเวลาเริ่มงาน", function (outTime) {
-        const { inTime } = this.parent;
-        return !outTime || !inTime || isAfter(inTime, outTime);
-      }),
+      .test(
+        "is-after",
+        "เวลาเลิกงานต้องมากกว่าเวลาเริ่มงาน",
+        function (outTime) {
+          const { inTime } = this.parent;
+          return !outTime || !inTime || isAfter(inTime, outTime);
+        }
+      ),
   }),
 };
 

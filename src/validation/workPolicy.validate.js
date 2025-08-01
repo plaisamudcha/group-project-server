@@ -22,13 +22,14 @@ const workPolicySchema = {
         value ? isValidTime(value) : true
       ),
     endTime: string()
-      .required("กรุณาใส่เวลาเลิกงาน")  // แก้ข้อความ
+      .required("กรุณาใส่เวลาเลิกงาน")
+      .nullable()
       .test("valid-time", "รูปแบบเวลาเลิกไม่ถูกต้อง", (value) =>
         value ? isValidTime(value) : true
       )
       .test("is-after", "เวลาเลิกต้องมากกว่าเวลาเริ่ม", function (endTime) {
         const { startTime } = this.parent;
-        return !endTime || !startTime || isAfter(startTime, endTime);
+        return !endTime || !startTime || isAfter(endTime, startTime);
       }),
     allowedLateMinutesPerMonth: number()
       .integer("กรุณาใส่จำนวนเต็ม")

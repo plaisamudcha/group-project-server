@@ -29,11 +29,13 @@ const leaveAdjustmentSchema = {
       .nullable()
       .integer("กรุณาใส่จำนวนเต็มบวก")
       .positive("กรุณาใส่จำนวนเต็มบวก"),
-    adjustmentType: string().nullable().oneOf(statusType, "adjustmentType ไม่ถูกต้อง"),
+    adjustmentType: string()
+      .nullable()
+      .oneOf(statusType, "adjustmentType ไม่ถูกต้อง"),
     attendanceId: number()
       .nullable()
       .integer("กรุณาใส่จำนวนเต็มบวก")
-      .positive("กรุณาใส่จำนวนเต็มบวก")
+      .positive("กรุณาใส่จำนวนเต็มบวก"),
   }),
 };
 
