@@ -1,13 +1,13 @@
 import app from "./app.js";
 import dotenv from "dotenv";
 import shutdown from "./utils/shutdown.util.js";
-import runAttendanceCron from "./node-cron/attendance.node-cron.js";
+import setupAttendanceFinalizerCron from "./node-cron/attendance.node-cron.js";
 
 dotenv.config();
 const PORT = process.env.PORT || 8000;
 
 app.listen(PORT, () => {
-  runAttendanceCron();
+  setupAttendanceFinalizerCron();
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
