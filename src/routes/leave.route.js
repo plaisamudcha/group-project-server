@@ -10,6 +10,6 @@ leaveRoute.post("/", validate(leaveSchema.createLeaveRequest), leaveController.c
 leaveRoute.get("/",authMiddleware.isRole('HR'),leaveController.getAllLeaves);
 leaveRoute.get("/user", leaveController.getUserLeaves);
 leaveRoute.get("/:id", leaveController.getLeavesDetails);
-leaveRoute.put("/:id/status", validate(leaveSchema.UpdateLeaveRequest), authMiddleware.isRole('HR'),leaveController.updateLeaveStatus);
+leaveRoute.put("/:id/status", validate(leaveSchema.updateLeaveStatus), authMiddleware.isRole('HR'),leaveController.updateLeaveStatus);
 
 export default leaveRoute;

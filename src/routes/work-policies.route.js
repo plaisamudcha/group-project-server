@@ -12,12 +12,12 @@ workPolicyRoute.use(authMiddleware.isRole("HR"));
 workPolicyRoute.get("/", workPolicyController.getAllPolicies);
 workPolicyRoute.post(
   "/",
-  validate(workPolicySchema.createOrUpdateWorkPolicy),
+  validate(workPolicySchema.createWorkPolicy),
   workPolicyController.createPolicy
 );
 workPolicyRoute.put(
   "/:id",
-  validate(workPolicySchema.UpdateWorkPolicy),
+  validate(workPolicySchema.updateWorkPolicy),
   workPolicyController.updatePolicy
 );
 

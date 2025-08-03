@@ -1,5 +1,7 @@
 import { date, number, object, ref, string } from "yup";
 import dayjs from "dayjs";
+import customParseFormat from 'dayjs/plugin/customParseFormat.js';
+dayjs.extend(customParseFormat);
 
 // ตรวจสอบรูปแบบวันที่ และตรวจจับเงื่อนไขไม่ให้สร้างหรือแก้ไขวันหยุดที่เป็นของปีที่แล้ว
 
@@ -16,23 +18,22 @@ const holidaySchema = {
   createHoliday: object({
     date: string()
       .required("กรุณาใส่วันหยุด")
-      .nullable()
       .test("valid-format", "รูปแบบวันหยุดไม่ถูกต้อง", (value) =>
-        value ? isValidDate(value) : true
+        !value || isValidDate(value)
       ).test("isYearAgo", "กรุณาตรวจสอบปี (ต้องเป็นปีปัจุบันหรือปีหน้า)", (value) =>
-        value ? isThisYearOrAfter(value) : true
+        !value || isThisYearOrAfter(value)
       ),
     name: string().required("กรุณาใส่ชื่อวันหยุด"),
   }),
   updateHoliday: object({
     date: string()
-      .nullable()
+      .optional()
       .test("valid-format", "รูปแบบวันหยุดไม่ถูกต้อง", (value) =>
-        value ? isValidDate(value) : true
+        !value || isValidDate(value)
       ).test("isYearAgo", "กรุณาตรวจสอบปี (ต้องเป็นปีปัจุบันหรือปีหน้า)", (value) =>
-        value ? isThisYearOrAfter(value) : true
+        !value || isThisYearOrAfter(value) 
       ),
-    name: string().nullable(),
+    name: string().optional(),
   }),
 };
 

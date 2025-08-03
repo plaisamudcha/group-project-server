@@ -17,6 +17,7 @@ const authSchema = {
   }),
   forgotSchema: object({
     password: string()
+      .required()
       .min(6, "กรุณาใส่รหัสผ่านอย่างน้อย 6 ตัว")
   }),
 };

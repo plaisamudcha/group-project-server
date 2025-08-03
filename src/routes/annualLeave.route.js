@@ -17,7 +17,7 @@ annualLeaveRoute.post("/", authMiddleware.isRole("HR"), validate(leaveAnnualSche
 annualLeaveRoute.put(
   "/:id",
   authMiddleware.isRole("HR"),
-  validate(leaveAnnualSchema.UpdateLeaveAnnual),
+  validate(leaveAnnualSchema.updateLeaveAnnual),
   annualLeaveController.updateEntitlement
 );
 

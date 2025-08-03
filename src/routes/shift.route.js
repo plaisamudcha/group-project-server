@@ -11,6 +11,6 @@ shiftsRoute.use(authMiddleware.isRole("HR"));
 
 shiftsRoute.get("/", shiftController.getAllshift);
 shiftsRoute.post("/", validate(shiftSchema.createShift), shiftController.createShift);
-shiftsRoute.put("/:id", validate(shiftSchema.UpdateShift), shiftController.updateShift);
+shiftsRoute.put("/:id", validate(shiftSchema.updateShift), shiftController.updateShift);
 
 export default shiftsRoute;
