@@ -21,6 +21,23 @@ const profileService = {
       data: profileData,
     });
   },
+    
+ 
+  assignShift: async (userId, shiftId, tx = prisma) => {
+    return await tx.employeeProfile.update({
+      where: { userId: userId },
+      data: { shiftId: shiftId },
+    });
+  },
+
+  
+  removeShift: async (userId, tx = prisma) => {
+    return await tx.employeeProfile.update({
+      where: { userId: userId },
+      data: { shiftId: null },
+    });
+  },
+
 };
 
 export default profileService;

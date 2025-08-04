@@ -30,13 +30,17 @@ const leaveController = {
   },
   createLeavesRequests: async (req, res) => {
     const userId = req.user.id;
-    const { startDate, endDate, leaveType, reason } = req.body;
+      const { startDate, endDate, leaveType, reason, leaveSession } = req.body;
+
     const holidayFound = await holidayService.checkInvalidLeaveDates(
       startDate,
       endDate
     );
-    const totalLeaveDays = calculateLeaveDays(startDate, endDate);
-    console.log("first");
+     const { totalLeaveDays, preciseStartDate, preciseEndDate } = calculateLeaveDays(
+      startDate,
+      endDate,
+      leaveSession
+    );
     if (totalLeaveDays <= 0) {
       console.log("second");
       return res
@@ -56,10 +60,10 @@ const leaveController = {
       leaveType,
       leaveYear
     );
-    const overlappingLeave = await leaveService.checkOverLaptime(
+     const overlappingLeave = await leaveService.checkOverLaptime(
       userId,
-      startDate,
-      endDate
+      preciseStartDate, 
+      preciseEndDate    
     );
     if (overlappingLeave) {
       return res.status(409).json({
@@ -74,8 +78,8 @@ const leaveController = {
     const result = await prisma.$transaction(async (tx) => {
       const newLeaveRequest = await leaveService.createLeaveRequest(
         {
-          startDate: startDate,
-          endDate: endDate,
+          startDate: preciseStartDate,
+          endDate: preciseEndDate,
           leaveDays: totalLeaveDays,
           leaveType,
           reason,
@@ -110,7 +114,7 @@ const leaveController = {
       return res.status(400).json({ message: "ไม่พบใบคำขอลานี้" });
     }
 
-    if (leaveRequest.status !== "PENDING") {
+    if (leaveRequest.status == "REJECTED") {
       return res.status(400).json({
         message: `ใบคำขอนี้ถูก ${leaveRequest.status.toLowerCase()} ไปแล้ว`,
       });

@@ -10,7 +10,8 @@ shiftsRoute.use(authMiddleware.checkToken);
 shiftsRoute.use(authMiddleware.isRole("HR"));
 
 shiftsRoute.get("/", shiftController.getAllshift);
-shiftsRoute.post("/", validate(shiftSchema.createShift), shiftController.createShift);
-shiftsRoute.put("/:id", validate(shiftSchema.updateShift), shiftController.updateShift);
-
+shiftsRoute.post("/",  shiftController.createShift);
+shiftsRoute.put("/:id", shiftController.updateShift);
+shiftsRoute.post("/assign-employee", shiftController.assignEmployee);
+shiftsRoute.post("/remove-employee", shiftController.removeEmployee);
 export default shiftsRoute;
