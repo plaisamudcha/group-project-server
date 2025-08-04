@@ -9,10 +9,26 @@ const shiftService = {
       data,
     });
   },
-  updateShift: async (id, name, inTime, outTime, tx = prisma) => {
+   updateShift: async (id, data, tx = prisma) => { // ปรับปรุงเล็กน้อย
     return await tx.shift.update({
       where: { id },
-      data: { name, inTime, outTime },
+      data: data,
+    });
+  },
+   getAllShiftsWithEmployees: async () => {
+      return await prisma.shift.findMany({
+      include: {
+        employeeProfiles: { 
+          select: {
+            user: { 
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
     });
   },
 };

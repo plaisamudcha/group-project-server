@@ -1,9 +1,11 @@
 import prisma from "../config/prisma.js";
+import auditService from "../services/audit-log.service.js";
+import profileService from "../services/profile.service.js";
 import shiftService from "../services/shift.service.js";
 
 const shiftController = {
   getAllshift: async (req, res) => {
-    const result = await shiftService.getAllShifts();
+    const result = await shiftService.getAllShiftsWithEmployees();
     res.json({ result });
   },
   createShift: async (req, res) => {
@@ -17,11 +19,12 @@ const shiftController = {
         },
         tx
       );
-      await auditLogService.createAuditLog(
+      await auditService.createAuditLog(
         {
           action: "CREATE",
-          entity: "shift",
-          entityId: newShift.id,
+          relatedTable: "shift",
+          relatedId: newShift.id,
+          detail: `Created new shift: ${name}`,
           userId: req.user.id,
         },
         tx
@@ -39,11 +42,12 @@ const shiftController = {
         { name, inTime, outTime },
         tx
       );
-      await auditLogService.createAuditLog(
+      await auditService.createAuditLog(
         {
           action: "UPDATE",
-          entity: "shift",
-          entityId: updatedShift.id,
+          relatedTable: "shift",
+          relatedId: updatedShift.id,
+          detail: `Updated shift ID: ${updatedShift.id}`,
           userId: req.user.id,
         },
         tx
@@ -51,6 +55,46 @@ const shiftController = {
       return updatedShift;
     });
     res.json({ message: "แก้ไขข้อมูลสำเร็จ", result });
+  },
+
+  // เพิ่ม: ฟังก์ชันสำหรับเพิ่มพนักงานเข้ากะ
+  assignEmployee: async (req, res) => {
+    const { shiftId, userId } = req.body;
+    const result = await prisma.$transaction(async (tx) => {
+      const updatedProfile = await profileService.assignShift(Number(userId), Number(shiftId), tx);
+      await auditService.createAuditLog(
+        {
+          action: "UPDATE",
+          relatedTable: "EmployeeProfile",
+          relatedId: updatedProfile.id,
+          detail: `Assigned shift ID ${shiftId} to user ID ${userId}`,
+          userId: req.user.id,
+        },
+        tx
+      );
+      return updatedProfile;
+    });
+    res.json({ message: "เพิ่มพนักงานเข้ากะสำเร็จ", result });
+  },
+
+  // เพิ่ม: ฟังก์ชันสำหรับนำพนักงานออกจากกะ
+  removeEmployee: async (req, res) => {
+    const { userId } = req.body;
+    const result = await prisma.$transaction(async (tx) => {
+      const updatedProfile = await profileService.removeShift(Number(userId), tx);
+      await auditService.createAuditLog(
+        {
+          action: "UPDATE",
+          relatedTable: "EmployeeProfile",
+          relatedId: updatedProfile.id,
+          detail: `Removed shift from user ID ${userId}`,
+          userId: req.user.id,
+        },
+        tx
+      );
+      return updatedProfile;
+    });
+    res.json({ message: "นำพนักงานออกจากกะสำเร็จ", result });
   },
 };
 
