@@ -1,4 +1,4 @@
-import { date, number, object, ref, string } from "yup";
+import { date, object, ref, string } from "yup";
 import { LeaveType, StatusLeave } from "../../generated/prisma/client.js";
 import dayjs from "dayjs";
 import customParseFormat from 'dayjs/plugin/customParseFormat.js';
@@ -10,6 +10,7 @@ dayjs.extend(isSameOrAfter);
 const leaveType = Object.values(LeaveType);
 const statusType = Object.values(StatusLeave);
 
+// ฟังก์ชันสำหรับตรวจสอบ format ของวันที่
 const isValidDate = (value, format = "YYYY-MM-DDTHH:mm") => {
   return dayjs(value, format, true).isValid();
 };
@@ -17,8 +18,6 @@ const isValidDate = (value, format = "YYYY-MM-DDTHH:mm") => {
 const checkLenghtDate = (start, end) => {
   return dayjs(end).isSameOrAfter(dayjs(start));
 };
-
-// endDate ต้องไม่เป็นอดีต และ เพิ่มจำกัดความยาวของเหตุผล
 
 const leaveSchema = {
   createLeaveRequest: object({
@@ -32,8 +31,18 @@ const leaveSchema = {
       .test("valid-format", "รูปแบบวันสิ้นสุดไม่ถูกต้อง ", (value) =>
         !value || isValidDate(value)
       )
+      // เพิ่ม: ตรวจสอบว่าวันสิ้นสุดไม่เป็นอดีต
       .test(
-        "isNotLessthanStartDate",
+        "is-not-past",
+        "วันสิ้นสุดต้องไม่เป็นวันในอดีต",
+        (value) => {
+            if (!value) return true;
+            return dayjs(value).isSameOrAfter(dayjs(), 'day');
+        }
+      )
+      // แก้ไข Bug: ใช้ ref() เพื่ออ้างอิงถึง startDate แม้ว่าจะไม่ได้ส่งมาพร้อมกัน
+      .test(
+        "is-not-less-than-start-date",
         "วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม",
         function (endDate) {
           const { startDate } = this.parent;

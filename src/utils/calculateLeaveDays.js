@@ -1,20 +1,23 @@
 import dayjs from 'dayjs';
-// แนะนำให้ใช้ plugin เหล่านี้เพื่อการทำงานที่สมบูรณ์
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore.js';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter.js';
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
 
 export default function calculateLeaveDays(startDateString, endDateString) {
-    const startDate = dayjs(startDateString);
-    const endDate = dayjs(endDateString);
+    // ตรวจสอบว่า Input มีข้อมูลเวลาหรือไม่
+    const hasStartTime = startDateString.includes('T');
+    const hasEndTime = endDateString.includes('T');
 
-    // เพิ่มการตรวจสอบ: ถ้าวันเริ่มอยู่หลังวันสิ้นสุด ให้คืนค่า 0
+    // ถ้าไม่มีเวลาเริ่มต้น ให้ตั้งเป็น 09:00
+    // ถ้าไม่มีเวลาสิ้นสุด ให้ตั้งเป็น 18:00
+    let startDate = hasStartTime ? dayjs(startDateString) : dayjs(startDateString).hour(9);
+    let endDate = hasEndTime ? dayjs(endDateString) : dayjs(endDateString).hour(18);
+
     if (startDate.isAfter(endDate)) {
         return 0;
     }
 
-    // --- กฎของบริษัท (สามารถปรับเปลี่ยนได้) ---
     const WORK_DAY_START_HOUR = 9;
     const WORK_DAY_END_HOUR = 18;
     const DURATION_FOR_HALF_DAY = 4;
@@ -23,6 +26,7 @@ export default function calculateLeaveDays(startDateString, endDateString) {
     let currentDate = startDate.startOf('day');
 
     while (currentDate.isSameOrBefore(endDate, 'day')) {
+        // ไม่ต้องมีการตรวจสอบวันเสาร์-อาทิตย์
         let dayValue = 1.0;
 
         const isFirstDay = currentDate.isSame(startDate, 'day');
