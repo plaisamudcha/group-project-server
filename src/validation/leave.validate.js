@@ -11,7 +11,7 @@ const leaveType = Object.values(LeaveType);
 const statusType = Object.values(StatusLeave);
 
 // ฟังก์ชันสำหรับตรวจสอบ format ของวันที่
-const isValidDate = (value, format = "YYYY-MM-DDTHH:mm") => {
+const isValidDate = (value, format = "YYYY-MM-DD") => {
   return dayjs(value, format, true).isValid();
 };
 
