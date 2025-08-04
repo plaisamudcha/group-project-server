@@ -11,6 +11,8 @@ datasource db {
 model User {
   id                      Int                      @id @default(autoincrement())
   name                    String
+  firstName               String?
+  lastName                String?
   email                   String                   @unique
   role                    RoleType
   password                String
@@ -91,7 +93,7 @@ model LeaveRequest {
   leaveDays    Float
   createdAt    DateTime          @default(now())
   updateAt     DateTime?         @updatedAt
-  leaveSession LeaveSession?      
+  leaveSession LeaveSession?
   leaveType    LeaveType
   status       StatusLeave       @default(PENDING)
   reason       String
