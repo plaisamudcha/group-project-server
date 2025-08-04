@@ -1,16 +1,14 @@
-import { date, number, object, ref, string } from "yup";
+import { number, object, string } from "yup";
 import dayjs from "dayjs";
+import customParseFormat from 'dayjs/plugin/customParseFormat.js';
+dayjs.extend(customParseFormat);
 
-// outtime (ต้องเป็นเวลาที่มากกว่าตอนเข้า)
-
-//เช็ครูปแบบเวลา
 const isValidTime = (value) => {
   return dayjs(value, "HH:mm", true).isValid();
 };
 
-//เช็คความต่างเวลา
 const isAfter = (start, end) => {
-  return dayjs(end, "HH-mm").isAfter(dayjs(start, "HH-mm"));
+  return dayjs(end, "HH:mm").isAfter(dayjs(start, "HH:mm"));  
 };
 
 const shiftSchema = {
@@ -18,13 +16,11 @@ const shiftSchema = {
     name: string().required("กรุณาใส่ชื่อกะ"),
     inTime: string()
       .required("กรุณาใส่เวลาเริ่มงาน")
-      .nullable()
       .test("valid-time", "รูปแบบเวลาเริ่มไม่ถูกต้อง", (value) =>
         value ? isValidTime(value) : true
       ),
-    outTime: date()
+    outTime: string()
       .required("กรุณาใส่เวลาเลิกงาน")
-      .nullable()
       .test("valid-time", "รูปแบบเวลาเลิกไม่ถูกต้อง", (value) =>
         value ? isValidTime(value) : true
       )
@@ -37,17 +33,18 @@ const shiftSchema = {
         }
       ),
   }),
-  UpdateShift: object({
-    name: string().nullable(),
+  
+  updateShift: object({  
+    name: string().optional(),
     inTime: string()
-      .nullable()
+      .optional()
       .test("valid-time", "รูปแบบเวลาเริ่มไม่ถูกต้อง", (value) =>
-        value ? isValidTime(value) : true
+        !value || isValidTime(value)  
       ),
-    outTime: date()
-      .nullable()
+    outTime: string()
+      .optional()
       .test("valid-time", "รูปแบบเวลาเลิกไม่ถูกต้อง", (value) =>
-        value ? isValidTime(value) : true
+        !value || isValidTime(value)
       )
       .test(
         "is-after",

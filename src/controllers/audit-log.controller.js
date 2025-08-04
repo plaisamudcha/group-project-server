@@ -7,7 +7,7 @@ const auditController = {
             res.status(200).json({message: 'ไม่พบข้อมูล'})
         }
 
-        res.status(200).json({message: 'ขอดูวันหยุดสำเร็จ', auditLog: {...resAuditLog}})
+        res.status(200).json({message: 'ขอดู Audit-log สำเร็จ', auditLog: resAuditLog})
     }
 };
 

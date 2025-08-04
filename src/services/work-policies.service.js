@@ -15,7 +15,8 @@ const workPolicyService = {
     deduct,
     minHourHalfDay,
     halfDay,
-    remark = ""
+    remark = "",
+    workingDays
   ) => {
     return await prisma.workPolicy.create({
       data: {
@@ -27,6 +28,7 @@ const workPolicyService = {
         minHoursForHalfDay: minHourHalfDay,
         halfDayAbsentRule: halfDay,
         remark,
+        workingDays
       },
     });
   },
