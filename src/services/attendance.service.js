@@ -201,6 +201,23 @@ const attendanceService = {
       attendances,
     };
   },
+   async getAllAttendances() {
+    const attendances = await prisma.attendance.findMany({
+      include: {
+        user: {
+          select: {
+            name: true,
+            firstName:true,
+            lastName:true
+          },
+        },
+      },
+      orderBy: {
+        date: 'desc',
+      },
+    });
+    return attendances;
+  },
 };
 
 export default attendanceService;

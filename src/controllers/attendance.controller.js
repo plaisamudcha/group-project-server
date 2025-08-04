@@ -38,6 +38,11 @@ const attendanceController = {
 
     res.json({ reports });
   },
+    getAllAttendances: async (req, res) => {
+    const attendances = await attendanceService.getAllAttendances();
+    res.json({ attendances });
+  },
+  
 };
 
 export default attendanceController;
