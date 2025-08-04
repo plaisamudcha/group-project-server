@@ -10,6 +10,6 @@ leaveAdjustmentRoute.use(authMiddleware.checkToken);
 
 leaveAdjustmentRoute.get("/", shiftController.getAllshift);
 leaveAdjustmentRoute.post("/", validate(leaveAdjustmentSchema.createLeaveAdjustment), shiftController.createShift);
-leaveAdjustmentRoute.put("/:id", validate(leaveAdjustmentSchema.UpdateLeaveAdjustment), shiftController.updateShift);
+leaveAdjustmentRoute.put("/:id", validate(leaveAdjustmentSchema.updateLeaveAdjustment), shiftController.updateShift);
 
 export default leaveAdjustmentRoute;
