@@ -20,5 +20,5 @@ workPolicyRoute.put(
   validate(workPolicySchema.updateWorkPolicy),
   workPolicyController.updatePolicy
 );
-
+workPolicyRoute.post("/assign", workPolicyController.assignPolicy);
 export default workPolicyRoute;
