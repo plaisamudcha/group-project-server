@@ -56,6 +56,17 @@ const workPolicyService = {
         remark,
       },
     });
+  }, assignPolicyToEmployees: async (policyId, employeeIds, tx = prisma) => {
+    return await tx.employeeProfile.updateMany({
+      where: {
+        userId: {
+          in: employeeIds, // อัปเดตโปรไฟล์ทั้งหมดที่มี userId อยู่ใน Array นี้
+        },
+      },
+      data: {
+        workPolicyId: policyId, // ตั้งค่า workPolicyId ใหม่
+      },
+    });
   },
 };
 
