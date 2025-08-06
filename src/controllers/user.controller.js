@@ -74,8 +74,10 @@ const userController = {
     if (!existingUser) {
       return createError(404, "ไม่พบผู้ใช้ที่ระบุ");
     }
+    const {employmentType,...dataToUpdate} = req.body
+    
     const result = await prisma.$transaction(async (tx) => {
-      const newUser = await userService.updateUser(userIdAsInt, req.body, tx);
+      const newUser = await userService.updateUser(userIdAsInt, dataToUpdate, tx);
       const data = {
         action: "UPDATE",
         relatedTable: "User",
