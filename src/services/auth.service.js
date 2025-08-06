@@ -71,6 +71,9 @@ const authService = {
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       },
     });
+  },  hashPassword: async (password) => {
+    const salt = await bcrypt.genSalt(12); 
+    return await bcrypt.hash(password, salt);
   },
 };
 

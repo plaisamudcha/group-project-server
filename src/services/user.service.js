@@ -1,5 +1,6 @@
 import prisma from "../config/prisma.js";
 import bcrypt from "bcryptjs";
+import authService from "./auth.service.js";
 
 const userService = {
    getAllUsers: async () => {
@@ -54,22 +55,24 @@ const userService = {
   },
 
 
-  createUser: async (userData, profileData, tx = prisma) => {
-    const hashpassword = await bcrypt.hash(userData.password, 12);
-    return tx.user.create({
-      data: {
-        name: userData.name,
-        email: userData.email,
-        role: userData.role,
-        password: hashpassword,
+   createUser: async (userData, profileData, tx = prisma) => {
+    const hashedPassword = await authService.hashPassword(userData.password);
 
+    return await tx.user.create({
+      data: {
+        ...userData,
+        password: hashedPassword,
         employeeProfile: {
           create: {
             employmentType: profileData.employmentType,
-            workPolicyId: profileData.workPolicyId,
-            shiftId: profileData?.shiftId || null,
+            // ใช้ workPolicyId ที่ได้รับมา
+            workPolicyId: profileData.workPolicyId, 
+            shiftId: null,
           },
         },
+      },
+      include: {
+        employeeProfile: true, // ดึงข้อมูลโปรไฟล์ที่สร้างขึ้นมาด้วย
       },
     });
   },
@@ -80,6 +83,11 @@ const userService = {
         id: userId,
       },
       data: updataData,
+    });
+  },
+   deleteUser: async (userId, tx = prisma) => {
+    return await tx.user.delete({
+      where: { id: userId },
     });
   },
 };
