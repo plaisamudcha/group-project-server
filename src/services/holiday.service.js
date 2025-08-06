@@ -11,15 +11,9 @@ const holidayService = {
     const start = new Date(newStartDate);
     const end = new Date(newEndDate);
 
-    const startDay = start
-      .toLocaleDateString("en-US", { weekday: "long" })
-      .toUpperCase();
-    const endDay = end
-      .toLocaleDateString("en-US", { weekday: "long" })
-      .toUpperCase();
-
-    const [holiday, workPolicies] = await Promise.all([
-      prisma.holiday.findFirst({
+    // ดึงข้อมูล holidays และ work policies
+    const [holidays, workPolicies] = await Promise.all([
+      prisma.holiday.findMany({
         where: {
           date: {
             gte: newStartDate,
@@ -30,42 +24,77 @@ const holidayService = {
       prisma.workPolicy.findMany(),
     ]);
 
-    // รวม working days จาก policy ทั้งหมด
+    // Parse working days อย่างถูกต้อง
     const allWorkingDays = new Set();
     for (const policy of workPolicies) {
       try {
-        // Debug: ดูว่า workingDays เป็นอะไร
-        console.log("workingDays value:", policy.workingDays);
+        console.log("Processing workPolicy:", policy.id);
         console.log("workingDays type:", typeof policy.workingDays);
-        console.log("Is array:", Array.isArray(policy.workingDays));
-
+        console.log("workingDays value:", policy.workingDays);
+        
         let workingDays = [];
-
-        // เช็คประเภทข้อมูลก่อน
+        
+        // ถ้าเป็น JSON string ให้ parse
         if (typeof policy.workingDays === "string") {
-          workingDays = policy.workingDays.split(",").map((day) => day.trim());
+          try {
+            // ลอง parse เป็น JSON ก่อน
+            workingDays = JSON.parse(policy.workingDays);
+            console.log("Parsed as JSON:", workingDays);
+          } catch (e) {
+            // ถ้า parse ไม่ได้ ลอง split
+            console.log("Failed to parse as JSON, trying split");
+            workingDays = policy.workingDays.split(",").map((day) => day.trim());
+          }
         } else if (Array.isArray(policy.workingDays)) {
           workingDays = policy.workingDays;
-        } else if (policy.workingDays) {
-          // ถ้าเป็น object หรืออย่างอื่น ให้ลอง stringify แล้ว parse
-          console.log("Unknown type, trying to convert:", policy.workingDays);
-          workingDays = Object.values(policy.workingDays).flat();
+          console.log("Already an array:", workingDays);
         }
 
-        workingDays.forEach((day) => allWorkingDays.add(day));
+        // เพิ่มวันทำงานเข้า Set
+        workingDays.forEach((day) => {
+          allWorkingDays.add(day.toUpperCase().trim());
+        });
+        
       } catch (err) {
-        console.error("Error parsing workingDays", err);
-        console.error("Policy:", policy);
+        console.error("Error parsing workingDays for policy", policy.id, err);
       }
     }
 
-    const isStartWorkingDay = allWorkingDays.has(startDay);
-    const isEndWorkingDay = allWorkingDays.has(endDay);
+    console.log("All working days:", Array.from(allWorkingDays));
+    console.log("Holidays in range:", holidays.map(h => h.date));
 
-    // ❌ ถ้าลาวันหยุดพิเศษ หรือวันลาไม่ตรงกับ working day เลย → ไม่ให้ลา
-    const isInvalid = !!holiday || (!isStartWorkingDay && !isEndWorkingDay);
+    // ตรวจสอบทุกวันในช่วงที่ลา
+    let currentDate = new Date(start);
+    while (currentDate <= end) {
+      const dayName = currentDate
+        .toLocaleDateString("en-US", { weekday: "long" })
+        .toUpperCase();
+      
+      const dateStr = currentDate.toISOString().split('T')[0];
+      
+      // ตรวจว่าเป็นวันทำงานไหม
+      if (!allWorkingDays.has(dayName)) {
+        console.log(`${dateStr} (${dayName}) is not a working day - INVALID`);
+        return true; // Invalid - ไม่ใช่วันทำงาน
+      }
+      
+      // ตรวจว่าเป็นวันหยุดไหม
+      const isHoliday = holidays.some(h => {
+        const holidayDate = new Date(h.date);
+        return holidayDate.toDateString() === currentDate.toDateString();
+      });
+      
+      if (isHoliday) {
+        console.log(`${dateStr} is a holiday - INVALID`);
+        return true; // Invalid - เป็นวันหยุด
+      }
+      
+      console.log(`${dateStr} (${dayName}) is valid`);
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
 
-    return isInvalid;
+    console.log("All dates are valid working days");
+    return false; // Valid - ทุกวันเป็นวันทำงานและไม่ใช่วันหยุด
   },
   patchHoliday: async (id, data) => {
     return await prisma.holiday.update({
