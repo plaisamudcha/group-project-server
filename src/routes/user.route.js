@@ -10,5 +10,5 @@ userRoute.get("/", authMiddleware.isRole(["HR"]), userController.getAllUsers);
 userRoute.get("/:id", userController.getUserById);
 userRoute.post("/", authMiddleware.isRole(["HR"]), userController.createUser);
 userRoute.put("/:id", authMiddleware.isRole(["HR"]), userController.updateUser);
-
+userRoute.delete("/:id", authMiddleware.isRole(["HR"]), userController.deleteUser);
 export default userRoute;
